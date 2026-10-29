@@ -1,0 +1,18 @@
+---
+title: "issue-comments example"
+author: "Jane Doe"
+filters:
+  - issue-comments
+issue-comments:
+  endpoint: https://script.google.com/macros/s/XXXXXXXX/exec
+  contact: mailto:jane@example.com
+---
+
+## Aims
+
+Highlight any sentence on this page and click **💬 Comment** to leave a
+comment. It will be filed as a GitHub issue.
+
+## Covariates
+
+We will adjust for age, sex and baseline renal function.
