@@ -1,39 +1,39 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://vagishhemmige.github.io/quarto-commenting-extension/quarto/how-it-works.html</loc>
-    <lastmod>2026-10-30T20:22:58.034Z</lastmod>
-  </url>
-  <url>
-    <loc>https://vagishhemmige.github.io/quarto-commenting-extension/quarto/relay.html</loc>
-    <lastmod>2026-10-30T20:22:58.034Z</lastmod>
-  </url>
-  <url>
     <loc>https://vagishhemmige.github.io/quarto-commenting-extension/quarto/manifest.html</loc>
-    <lastmod>2026-10-30T20:22:58.034Z</lastmod>
+    <lastmod>2026-10-30T20:23:29.627Z</lastmod>
   </url>
   <url>
     <loc>https://vagishhemmige.github.io/quarto-commenting-extension/quarto/styles.html</loc>
-    <lastmod>2026-10-30T20:22:58.034Z</lastmod>
-  </url>
-  <url>
-    <loc>https://vagishhemmige.github.io/quarto-commenting-extension/index.html</loc>
-    <lastmod>2026-10-30T20:22:58.034Z</lastmod>
-  </url>
-  <url>
-    <loc>https://vagishhemmige.github.io/quarto-commenting-extension/quarto/browser.html</loc>
-    <lastmod>2026-10-30T20:22:58.034Z</lastmod>
-  </url>
-  <url>
-    <loc>https://vagishhemmige.github.io/quarto-commenting-extension/quarto/about.html</loc>
-    <lastmod>2026-10-30T20:22:58.034Z</lastmod>
-  </url>
-  <url>
-    <loc>https://vagishhemmige.github.io/quarto-commenting-extension/quarto/security.html</loc>
-    <lastmod>2026-10-30T20:22:58.034Z</lastmod>
+    <lastmod>2026-10-30T20:23:29.627Z</lastmod>
   </url>
   <url>
     <loc>https://vagishhemmige.github.io/quarto-commenting-extension/quarto/filter.html</loc>
-    <lastmod>2026-10-30T20:22:58.034Z</lastmod>
+    <lastmod>2026-10-30T20:23:29.627Z</lastmod>
+  </url>
+  <url>
+    <loc>https://vagishhemmige.github.io/quarto-commenting-extension/quarto/relay.html</loc>
+    <lastmod>2026-10-30T20:23:29.627Z</lastmod>
+  </url>
+  <url>
+    <loc>https://vagishhemmige.github.io/quarto-commenting-extension/index.html</loc>
+    <lastmod>2026-10-30T20:23:29.627Z</lastmod>
+  </url>
+  <url>
+    <loc>https://vagishhemmige.github.io/quarto-commenting-extension/quarto/how-it-works.html</loc>
+    <lastmod>2026-10-30T20:23:29.627Z</lastmod>
+  </url>
+  <url>
+    <loc>https://vagishhemmige.github.io/quarto-commenting-extension/quarto/security.html</loc>
+    <lastmod>2026-10-30T20:23:29.627Z</lastmod>
+  </url>
+  <url>
+    <loc>https://vagishhemmige.github.io/quarto-commenting-extension/quarto/about.html</loc>
+    <lastmod>2026-10-30T20:23:29.627Z</lastmod>
+  </url>
+  <url>
+    <loc>https://vagishhemmige.github.io/quarto-commenting-extension/quarto/browser.html</loc>
+    <lastmod>2026-10-30T20:23:29.627Z</lastmod>
   </url>
 </urlset>
