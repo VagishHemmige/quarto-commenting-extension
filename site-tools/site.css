@@ -1,0 +1,21 @@
+/* "Source code" callout, pink like the Rcode callout on the R analysis sites. */
+.callout.source-callout {
+  border-left-color: #e83e8c !important;
+}
+.callout.source-callout .callout-header {
+  background-color: rgba(232, 62, 140, 0.1) !important;
+}
+
+/* File and line-range caption above each snippet. */
+.source-snippet > p:first-child {
+  margin: 1rem 0 0.25rem;
+  font-size: 0.85rem;
+}
+.source-snippet > p:first-child code {
+  background: transparent;
+  color: inherit;
+  padding: 0;
+}
+.source-snippet div.sourceCode {
+  margin-top: 0;
+}
