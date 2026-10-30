@@ -15,13 +15,13 @@ Your GitHub token stays in an Apps Script project that you own and is never sent
 
 ## Using it
 
-Installation and the ten-minute setup are in the [README](https://github.com/VagishHemmige/quarto-commenting-extension#readme). In short:
+[Installation](quarto/installation.qmd) walks through the ten-minute setup, with screenshots. In short:
 
 ```bash
 quarto add VagishHemmige/quarto-commenting-extension
 ```
 
-then deploy [`apps-script/Code.gs`](https://github.com/VagishHemmige/quarto-commenting-extension/blob/main/apps-script/Code.gs) as a web app and add its URL to `_quarto.yml`.
+then deploy [`apps-script/Code.gs`](https://github.com/VagishHemmige/quarto-commenting-extension/blob/main/apps-script/Code.gs) as a web app and add its URL to `_quarto.yml`. Every setting is on the [Options](quarto/options.qmd) page.
 
 ## What this site is for
 

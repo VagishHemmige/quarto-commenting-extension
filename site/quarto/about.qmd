@@ -25,6 +25,8 @@ To check a change before merging, run `quarto render site` (or `quarto preview s
 ## Pages
 
 - [Home](../index.qmd): what the extension does and where to start.
+- [Installation](installation.qmd): setting it up, step by step.
+- [Options](options.qmd): every setting, and maintenance.
 - [How it works](how-it-works.qmd): one comment's path from a highlighted passage to a GitHub issue.
 - [Security and privacy](security.qmd): what each guard protects against, and what it does not.
 - [1. Manifest](manifest.qmd): `_extension.yml`, and what `quarto add` installs.

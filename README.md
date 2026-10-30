@@ -37,64 +37,25 @@ Or copy `_extensions/issue-comments/` into your project's `_extensions/` folder.
 
 ## Setup (about 10 minutes, once)
 
-### 1. Make a GitHub token
+1. Make a fine-grained GitHub token for the repository that will receive
+   comments, with **Issues: Read and write** and nothing else.
+2. Deploy [`apps-script/Code.gs`](apps-script/Code.gs) as a Google Apps
+   Script web app, with the token and repository in its Script Properties.
+3. Turn it on in `_quarto.yml` with the web app's `/exec` URL:
 
-GitHub → Settings → Developer settings → Personal access tokens →
-**Fine-grained tokens** → Generate new token.
+   ```yaml
+   filters:
+     - issue-comments
 
-- **Repository access:** Only select repositories → the repo that will receive comments
-- **Permissions:** Repository → **Issues: Read and write** (nothing else)
-- Note the expiry date. When the token expires, commenting stops until you
-  paste a new token into step 2.
+   issue-comments:
+     endpoint: https://script.google.com/macros/s/XXXXXXXX/exec
+     owner: Jane Doe
+     contact: https://janedoe.github.io/contact.html
+   ```
 
-### 2. Create the Apps Script relay
-
-1. Go to <https://script.google.com> → **New project**. Name it "issue-comments".
-2. Replace the contents of `Code.gs` with [`apps-script/Code.gs`](apps-script/Code.gs). Save.
-3. **Project Settings** (gear icon) → **Script Properties** → add:
-
-   | Property | Value |
-   |---|---|
-   | `GITHUB_TOKEN` | the token from step 1 |
-   | `GITHUB_REPO` | `owner/repo` |
-   | `SITE_PREFIX` | your site's address, e.g. `https://owner.github.io/repo/`. Recommended, since only pages starting with this can post. |
-
-   Optional: `LABEL` (default `reader-comment`), `MAX_PER_HOUR` (default 20,
-   all readers combined), `PASSCODE` (see Options).
-4. **Deploy → New deployment** → type **Web app**:
-   - Execute as: **Me**
-   - Who has access: **Anyone**
-5. Authorize when asked. Google warns "Google hasn't verified this app"
-   because the script is yours, not a published app: **Advanced → Go to issue-comments**.
-6. Copy the **Web app URL** (ends in `/exec`). Opening it in a browser
-   should show `"issue-comments relay is running."`
-
-### 3. Turn it on in Quarto
-
-In `_quarto.yml` (whole site) or in one page's front matter (just that page):
-
-```yaml
-filters:
-  - issue-comments
-
-issue-comments:
-  endpoint: https://script.google.com/macros/s/XXXXXXXX/exec
-  owner: Jane Doe
-  contact: https://janedoe.github.io/contact.html
-```
-
-Render, publish, and highlight some text on the live site to test.
-
-## Options
-
-| Option | Default | What it does |
-|---|---|---|
-| `endpoint` | *(required)* | The Apps Script web app URL. |
-| `owner` | the document's `author`, else "the site owner" | The name readers are told will post the issue. |
-| `contact` | none (Quarto warns) | Where readers go to change or remove a comment: a contact page, your GitHub profile, or `mailto:you@example.com`. |
-| `preview` | `true` | Show readers the exact issue before it posts. |
-| `passcode` | `false` | Ask readers for a shared passcode. Also set the `PASSCODE` Script Property. Use it only if spam appears. |
-| `page-button` | `false` | Also show a fixed "Comment on this page" button, for comments not tied to a passage. |
+Step-by-step instructions, with screenshots and troubleshooting:
+[Installation](https://vagishhemmige.github.io/quarto-commenting-extension/quarto/installation.html).
+Every setting: [Options](https://vagishhemmige.github.io/quarto-commenting-extension/quarto/options.html).
 
 ## What readers see and what gets posted
 
