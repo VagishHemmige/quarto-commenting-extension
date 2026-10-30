@@ -14,7 +14,7 @@ Helpers it shares with [the browser script](browser.qmd): `buildIssue_` must mat
 
 All configuration lives in Script Properties, which only you can see. Changing a property takes effect on the next request, with no redeployment.
 
-```{.js file="apps-script/Code.gs" from="* issue-comments relay: receives" to="*/"}
+```{.js file="apps-script/Code.gs" from="/**"}
 ```
 
 ## Receiving a comment

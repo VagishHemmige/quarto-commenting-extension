@@ -1,2 +1,3 @@
-/.quarto/
-/.quarto/
+# Quarto cache and the rendered site (published by the Action, not committed)
+/site/.quarto/
+/site/_site/

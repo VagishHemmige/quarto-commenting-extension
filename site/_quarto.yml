@@ -1,9 +1,11 @@
 # Website explaining how the issue-comments extension works, file by file.
-# It sits beside the extension rather than replacing anything: `quarto add`
-# copies only _extensions/issue-comments/, so none of this reaches users.
+# The source is this folder. A GitHub Action (.github/workflows/publish.yml)
+# renders it and publishes it to the gh-pages branch, which GitHub Pages
+# serves. `quarto add` copies only _extensions/issue-comments/, so none of
+# this reaches people who install the extension.
 project:
   type: website
-  output-dir: docs
+  output-dir: _site
   render:
     - index.qmd
     - quarto/**
@@ -20,6 +22,7 @@ website:
   page-navigation: true
 
   sidebar:
+    title: "issue-comments"
     style: docked
     search: true
     contents:
@@ -51,11 +54,13 @@ website:
         text: About
 
 # Code on the pages comes from the real files through this filter; see the
-# comment at the top of site-tools/source-snippet.lua. Keep these two values
-# the same as repo-url and repo-branch above.
+# comment at the top of site-tools/source-snippet.lua. Keep repo-url and
+# repo-branch the same as above; levels-up: 1 because this project is the
+# site/ folder and the files it shows are in the repository root.
 source-snippet:
   repo-url: https://github.com/VagishHemmige/quarto-commenting-extension
   repo-branch: main
+  levels-up: 1
 
 filters:
   - site-tools/source-snippet.lua

@@ -1,0 +1,37 @@
+# Renders the website in site/ and publishes it to the gh-pages branch, which
+# GitHub Pages serves. Runs on every push to main, or by hand from the Actions tab.
+# The pages have no code chunks, so only Quarto is needed.
+# Copied from the r-analysis-workflow plugin's publish.yml, which is based on
+# Quarto's GitHub Pages guide and quarto-dev/quarto-actions.
+
+on:
+  workflow_dispatch:
+  push:
+    branches: main
+
+name: Publish website
+
+permissions:
+  contents: write
+
+jobs:
+  build-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Set up Quarto
+        uses: quarto-dev/quarto-actions/setup@v2
+        with:
+          # Pinned so a new Quarto release can't change the site unseen.
+          # To move to a newer version, change this line in a pull request.
+          version: 1.8.25
+
+      - name: Render and publish to GitHub Pages
+        uses: quarto-dev/quarto-actions/publish@v2
+        with:
+          target: gh-pages
+          path: site
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

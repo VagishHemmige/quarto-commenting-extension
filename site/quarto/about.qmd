@@ -14,11 +14,13 @@ A change to the issue format has to be made in two places, `buildIssue_` in `app
 
 ## How this site is built
 
-The site is a Quarto website in the same repository as the extension. `_quarto.yml` and `index.qmd` are at the root, the other pages are in `quarto/`, and the rendered site is committed in `docs/` and served by GitHub Pages. `quarto add` copies only `_extensions/issue-comments/`, so none of the site reaches people who install the extension.
+The site is a Quarto website in the `site/` folder of the extension's repository. `_quarto.yml` and `index.qmd` are at the top of that folder and the other pages are in `site/quarto/`. `quarto add` copies only `_extensions/issue-comments/`, so none of the site reaches people who install the extension.
+
+The rendered site is not committed. On every push to `main`, a GitHub Action (`.github/workflows/publish.yml`) renders `site/` with a pinned Quarto version and publishes the result to the `gh-pages` branch, which GitHub Pages serves. The Action can also be run by hand from the repository's **Actions** tab.
 
 The code on each page is not pasted in. Each block names a file and a line of text it starts at, and a small filter, `site-tools/source-snippet.lua`, reads those lines from the file when the site is rendered and links them to the same lines on GitHub. If a file is renamed or the starting line changes, the render fails with a message naming the page and file, so the site cannot silently fall out of date. The prose still has to be updated by hand when the code's behaviour changes, in the same pull request.
 
-To rebuild it, run `quarto render` in the repository's root and commit `docs/`.
+To check a change before merging, run `quarto render site` (or `quarto preview site`) from the repository's root; the output goes to `site/_site/`, which git ignores.
 
 ## Pages
 

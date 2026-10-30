@@ -6,7 +6,7 @@
 --          from="function issueTitle(" to="}"}
 --   ```
 --
--- file  path from the project root (required)
+-- file  path from the repository root (required)
 -- from  text that appears on exactly one line of the file; the snippet starts
 --       there. If it is the whole of one line (leading and trailing spaces
 --       ignored), that line is used even if the text also appears elsewhere.
@@ -21,11 +21,16 @@
 -- therefore breaks the build instead of leaving a stale page.
 --
 -- Each snippet gets a caption naming the file and line range, linked to those
--- lines on GitHub, using `source-snippet: repo-url / repo-branch` in
--- _quarto.yml (a filter cannot read the `website:` settings).
+-- lines on GitHub. Settings, under `source-snippet:` in _quarto.yml (a filter
+-- cannot read the `website:` settings):
+--   repo-url     the repository on GitHub, for the links
+--   repo-branch  the branch to link to (default main)
+--   levels-up    how many folders above the Quarto project the repository
+--                root is (default 0). A number, because Quarto rewrites
+--                path-like values such as ".." relative to each page.
 -- Common leading indentation is removed.
 
-local repo_url, repo_branch
+local repo_url, repo_branch, levels_up
 
 local function stringify(v)
   if v == nil then return nil end
@@ -44,6 +49,7 @@ end
 
 local function read_lines(rel)
   local root = (quarto and quarto.project and quarto.project.directory) or "."
+  for _ = 1, levels_up or 0 do root = pandoc.path.directory(root) end
   local path = pandoc.path.join({ root, rel })
   local fh = io.open(path, "r")
   if not fh then fail("cannot open " .. rel) end
@@ -106,6 +112,7 @@ local function Meta(meta)
   if type(cfg) == "table" then
     repo_url = stringify(cfg["repo-url"])
     repo_branch = stringify(cfg["repo-branch"]) or "main"
+    levels_up = tonumber(stringify(cfg["levels-up"]) or "0")
   end
 end
 
