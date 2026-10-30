@@ -1,0 +1,24 @@
+---
+title: "1. Manifest"
+---
+
+The manifest tells Quarto that `_extensions/issue-comments/` is an extension and that what it contributes is one filter.
+
+::: {.callout-note .source-callout title="Source code" icon=false}
+[`_extensions/issue-comments/_extension.yml`](https://github.com/VagishHemmige/quarto-commenting-extension/blob/main/_extensions/issue-comments/_extension.yml)
+:::
+
+```{.yaml file="_extensions/issue-comments/_extension.yml"}
+```
+
+## What each field does
+
+- `title`, `author` and `version` are shown by `quarto add` and `quarto list extensions`. The version here should match the one the filter gives its HTML dependency (see [the Lua filter](filter.qmd#loading-the-script-and-styles)), so the browser does not keep a cached copy of an older script.
+- `quarto-required: ">=1.4.0"` makes Quarto refuse to run the extension on an older version rather than fail partway through. The filter relies on Quarto's Lua API (`quarto.doc.add_html_dependency`, `quarto.doc.include_text`, `quarto.json.encode` and `quarto.log.warning`), so this floor should be raised if the filter starts using anything newer.
+- `contributes: filters` lists one Lua filter. A site turns it on by naming the extension, `issue-comments`, under `filters:`; Quarto then finds this manifest and runs `issue-comments.lua`.
+
+Nothing else is declared. The JavaScript and CSS are not listed here because the filter attaches them itself, and only to HTML pages that have commenting configured.
+
+## What `quarto add` installs
+
+`quarto add VagishHemmige/quarto-commenting-extension` copies every folder under the repository's `_extensions/`, so this folder must stay the only one there. That is why this website's own tools live in `site-tools/` rather than `_extensions/`.

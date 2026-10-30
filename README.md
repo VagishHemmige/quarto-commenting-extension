@@ -17,6 +17,8 @@ reader's browser ──► Google Apps Script (holds your token) ──► GitHu
 Your GitHub token lives only in a Google Apps Script that you own. It is
 never sent to the web page.
 
+How it works, file by file: <https://vagishhemmige.github.io/quarto-commenting-extension/>
+
 ## Requirements
 
 - A Quarto **website or HTML document** published somewhere public (GitHub

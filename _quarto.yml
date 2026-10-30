@@ -1,0 +1,77 @@
+# Website explaining how the issue-comments extension works, file by file.
+# It sits beside the extension rather than replacing anything: `quarto add`
+# copies only _extensions/issue-comments/, so none of this reaches users.
+project:
+  type: website
+  output-dir: docs
+  render:
+    - index.qmd
+    - quarto/**
+
+author:
+  - name: "Vagish Hemmige"
+
+website:
+  title: "issue-comments"
+  site-url: https://vagishhemmige.github.io/quarto-commenting-extension
+  repo-url: https://github.com/VagishHemmige/quarto-commenting-extension
+  repo-branch: main
+  repo-actions: [edit, issue]
+  page-navigation: true
+
+  sidebar:
+    style: docked
+    search: true
+    contents:
+      - href: index.qmd
+        text: Home
+
+      - section: Background
+        contents:
+          - href: quarto/how-it-works.qmd
+            text: How it works
+          - href: quarto/security.qmd
+            text: Security and privacy
+
+      # One numbered page per source file, in the order a comment passes through them.
+      - section: Source code
+        contents:
+          - href: quarto/manifest.qmd
+            text: 1. Manifest
+          - href: quarto/filter.qmd
+            text: 2. Lua filter
+          - href: quarto/browser.qmd
+            text: 3. Browser script
+          - href: quarto/styles.qmd
+            text: 4. Styles
+          - href: quarto/relay.qmd
+            text: 5. Apps Script relay
+
+      - href: quarto/about.qmd
+        text: About
+
+# Code on the pages comes from the real files through this filter; see the
+# comment at the top of site-tools/source-snippet.lua. Keep these two values
+# the same as repo-url and repo-branch above.
+source-snippet:
+  repo-url: https://github.com/VagishHemmige/quarto-commenting-extension
+  repo-branch: main
+
+filters:
+  - site-tools/source-snippet.lua
+  # To let readers comment on this site with the extension itself, set up a
+  # relay (README, step 2) for this repo and uncomment:
+  # - issue-comments
+
+# issue-comments:
+#   endpoint: https://script.google.com/macros/s/XXXXXXXX/exec
+#   contact: https://github.com/VagishHemmige
+
+format:
+  html:
+    theme: cosmo
+    css: site-tools/site.css
+    toc: true
+    page-layout: full
+    code-copy: true
+    highlight-style: github

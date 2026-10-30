@@ -1,0 +1,53 @@
+---
+title: "4. Styles"
+---
+
+The stylesheet gives the buttons and dialog a look that fits the site. Every class starts with `ic-`, so it cannot clash with the site's own styles.
+
+::: {.callout-note .source-callout title="Source code" icon=false}
+[`_extensions/issue-comments/issue-comments.css`](https://github.com/VagishHemmige/quarto-commenting-extension/blob/main/_extensions/issue-comments/issue-comments.css)
+:::
+
+## Following the site's theme
+
+Colours come from the Bootstrap variables that Quarto's HTML themes define (`--bs-body-bg`, `--bs-primary` and so on), each with a fallback. So the buttons and dialog take on the site's theme, including a dark theme, and still look reasonable on a page without Bootstrap.
+
+## Buttons
+
+Both buttons are rounded "pills" with a light shadow. The selection button is placed absolutely, at the position the script calculates; the page button is fixed to the bottom right of the window. A `z-index` of 1050 puts them above Bootstrap's fixed navigation bar, which uses 1030.
+
+```{.css file="_extensions/issue-comments/issue-comments.css" from=".ic-select-btn,"}
+```
+
+The `[hidden]` rules matter because a `display` value set by a stylesheet overrides the browser's built-in handling of the `hidden` attribute, which the script uses to show and hide things.
+
+## The dialog
+
+The dialog is at most 34rem wide, and narrower on small screens. The backdrop dims the page behind it.
+
+```{.css file="_extensions/issue-comments/issue-comments.css" from=".ic-dialog {" to=".ic-dialog::backdrop { background: rgba(0, 0, 0, 0.35); }"}
+```
+
+The heading's border and padding are reset because Quarto themes add a rule under `h2`. Labels sit above full-width fields.
+
+```{.css file="_extensions/issue-comments/issue-comments.css" from=".ic-dialog h2" to="}"}
+```
+
+## Passage, notes and the honeypot
+
+The quoted passage keeps its line breaks and scrolls once it is taller than 9rem. The honeypot field is moved far off-screen rather than hidden with `display: none`, because bots may skip fields that are not displayed.
+
+```{.css file="_extensions/issue-comments/issue-comments.css" from=".ic-quote {" to=".ic-note a { color: var(--bs-link-color, #2780e3); }"}
+```
+
+## Preview card and actions
+
+```{.css file="_extensions/issue-comments/issue-comments.css" from=".ic-pv-card {" to=".ic-actions button:disabled { opacity: 0.6; cursor: default; }"}
+```
+
+## Printing
+
+The buttons and dialog are hidden when a page is printed.
+
+```{.css file="_extensions/issue-comments/issue-comments.css" from="@media print" to="}"}
+```

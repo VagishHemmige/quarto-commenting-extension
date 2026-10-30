@@ -1,0 +1,36 @@
+---
+title: "issue-comments"
+subtitle: "Passage comments on a Quarto website, filed as GitHub issues, with no reader account"
+---
+
+**issue-comments** is a Quarto extension. A reader highlights a passage on your site, types their name and a comment, checks a preview, and clicks **Post publicly**. The comment becomes an issue in a GitHub repository you choose, with the passage quoted and a link back to its section. Readers need no GitHub account, or any account.
+
+```{mermaid}
+flowchart LR
+  A["Reader's browser<br/>(issue-comments.js)"] -- "name, comment,<br/>passage, page" --> B["Google Apps Script<br/>relay (Code.gs)<br/>holds your token"]
+  B -- "GitHub REST API" --> C["Issue in<br/>your repository"]
+```
+
+Your GitHub token stays in an Apps Script project that you own and is never sent to the page.
+
+## Using it
+
+Installation and the ten-minute setup are in the [README](https://github.com/VagishHemmige/quarto-commenting-extension#readme). In short:
+
+```bash
+quarto add VagishHemmige/quarto-commenting-extension
+```
+
+then deploy [`apps-script/Code.gs`](https://github.com/VagishHemmige/quarto-commenting-extension/blob/main/apps-script/Code.gs) as a web app and add its URL to `_quarto.yml`.
+
+## What this site is for
+
+This site explains how the extension works, file by file, for anyone who wants to check it before trusting it with their token, change it, or contribute. The code on every page is read from the repository's files when the site is built, so what you see is the code that `quarto add` installs.
+
+- [How it works](quarto/how-it-works.qmd) follows one comment from a highlighted passage to a GitHub issue.
+- [Security and privacy](quarto/security.qmd) sets out what each guard protects against, and what it does not.
+- The **Source code** pages take each of the five files in turn, in the order a comment passes through them.
+
+## Status
+
+Version 0.2.0. It has been used end to end on a live GitHub Pages site, with comments arriving as issues. It has no automated tests.

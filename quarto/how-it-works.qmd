@@ -1,0 +1,56 @@
+---
+title: "How it works"
+---
+
+The extension is five files in three places, and each runs at a different time.
+
+| File | Runs | Where |
+|---|---|---|
+| [`_extension.yml`](manifest.qmd) | when Quarto loads the extension | your computer or CI |
+| [`issue-comments.lua`](filter.qmd) | once per page, at render time | your computer or CI |
+| [`issue-comments.js`](browser.qmd) and [`.css`](styles.qmd) | every time a reader opens a page | the reader's browser |
+| [`Code.gs`](relay.qmd) | every time a reader posts | Google's servers, as you |
+
+## At render time
+
+You turn the extension on by listing `issue-comments` under `filters:` and giving it an `issue-comments:` block in `_quarto.yml` or a page's front matter. For each page, the Lua filter:
+
+1. stops unless the output is HTML and the block has an `endpoint`;
+2. works out the remaining settings, falling back to the document's first `author` for `owner`;
+3. attaches `issue-comments.js` and `issue-comments.css` to the page; and
+4. writes the settings into the page's `<head>` as `window.ISSUE_COMMENTS`.
+
+Nothing is sent anywhere at render time. A page without the block, or a PDF or Word render, is left exactly as it was.
+
+## In the reader's browser
+
+```{mermaid}
+sequenceDiagram
+  actor R as Reader
+  participant P as Page (issue-comments.js)
+  participant S as Apps Script relay
+  participant G as GitHub API
+  R->>P: highlights text
+  P-->>R: shows 💬 Comment beside the selection
+  R->>P: clicks it, types name and comment
+  P-->>R: shows the exact issue (preview)
+  R->>P: Post publicly
+  P->>S: POST JSON as text/plain
+  S->>S: honeypot, passcode, site, length and hourly checks
+  S->>G: POST /repos/owner/repo/issues (your token)
+  G-->>S: 201 Created, issue number and URL
+  S-->>P: { ok: true, number, url }
+  P-->>R: Thanks! Posted as issue 12
+```
+
+The script watches the selection. When it covers at least two characters inside the page's main content, it records the text (cut to 1,500 characters), the nearest heading and that section's `id`, and places the button under the end of the selection. The dialog has three stages: **edit**, **preview** (unless `preview: false`) and **done**. The reader's name is saved in their own browser so they don't retype it.
+
+The request is sent as `text/plain` so the browser does not first send a CORS "preflight" request, which Apps Script cannot answer.
+
+## On the relay
+
+`doPost` reads your Script Properties, runs its checks, builds the issue text, and creates the issue with your token. It always answers with JSON of the form `{ ok, error }` or `{ ok, number, url }`, which the page shows to the reader. `doGet` exists only so that opening the `/exec` URL in a browser confirms the deployment is live.
+
+## Two copies of the issue format
+
+The preview has to show exactly what will be posted, but the issue is built on the relay. So the format is written twice: `buildIssue_` in `Code.gs`, and `issueTitle` and `fillPreview` in `issue-comments.js`. A change to one needs the same change to the other. The [relay page](relay.qmd#building-the-issue) lists where the two currently differ.

@@ -1,0 +1,126 @@
+---
+title: "5. Apps Script relay"
+---
+
+The relay is a Google Apps Script web app that you deploy from your own Google account. It receives each comment, checks it, and creates the GitHub issue with your token. It is the only part that holds a secret, so it is the part to read most carefully.
+
+::: {.callout-note .source-callout title="Source code" icon=false}
+[`apps-script/Code.gs`](https://github.com/VagishHemmige/quarto-commenting-extension/blob/main/apps-script/Code.gs)
+
+Helpers it shares with [the browser script](browser.qmd): `buildIssue_` must match `issueTitle` and `fillPreview` in `issue-comments.js`.
+:::
+
+## Settings
+
+All configuration lives in Script Properties, which only you can see. Changing a property takes effect on the next request, with no redeployment.
+
+```{.js file="apps-script/Code.gs" from="* issue-comments relay: receives" to="*/"}
+```
+
+## Receiving a comment
+
+Apps Script calls `doPost` for every POST to the `/exec` URL. Without a token and repository it refuses at once.
+
+```{.js file="apps-script/Code.gs" from="function doPost(e)" }
+```
+
+The page sends JSON labelled as plain text (see [Posting](browser.qmd#posting)), so it is parsed by hand.
+
+```{.js file="apps-script/Code.gs" from="const d = JSON.parse" }
+```
+
+The checks then run cheapest first. A filled-in honeypot gets a fake success, so a bot has no reason to try again.
+
+```{.js file="apps-script/Code.gs" from="// Honeypot filled in" }
+```
+
+```{.js file="apps-script/Code.gs" from="const passcode = props" }
+```
+
+`SITE_PREFIX` compares the page address the browser reported. It turns away other sites and casual reuse of the URL, but the address is supplied by the sender, so it is not proof of where a request came from (see [Security and privacy](security.qmd)).
+
+```{.js file="apps-script/Code.gs" from="const prefix = props" }
+```
+
+The name and comment are trimmed and cut to the same limits the form uses, since a request need not come from the form.
+
+```{.js file="apps-script/Code.gs" from="const name = clean_(d.name" }
+```
+
+The rate limit is checked last, so that rejected requests don't use it up.
+
+```{.js file="apps-script/Code.gs" from="if (!allow_(" }
+```
+
+Then the issue is created, and the reader is sent its number and address.
+
+```{.js file="apps-script/Code.gs" from="const issue = createIssue_(" to="return reply_({ ok: true, number: issue.number, url: issue.html_url });"}
+```
+
+Any error, including one from GitHub, is written to the Apps Script execution log for you, and the reader gets a general message, so GitHub's response is never shown on the page.
+
+```{.js file="apps-script/Code.gs" from="} catch (err) {" to="}"}
+```
+
+## Checking the deployment
+
+```{.js file="apps-script/Code.gs" from="/** Lets you open" to="}"}
+```
+
+## Building the issue
+
+`buildIssue_` writes the title and body. The anchor is reduced to characters valid in an `id`, so it cannot break out of the link. The name and section are escaped so they display literally; the passage and comment are left as typed, so GitHub renders any Markdown in them. Finally `noMentions_` runs over both title and body.
+
+```{.js file="apps-script/Code.gs" from="/** The page previews this text" to="}"}
+```
+
+::: {.callout-warning title="Where the preview and the issue can differ"}
+The preview's title comes from `issueTitle` in the browser script, and there are two small differences from the title built here:
+
+- The `…` is added here when the comment is more than 60 characters *before* runs of spaces and line breaks are collapsed, and in the browser when it is more than 60 characters *after*. A comment a little under 60 characters that contains several line breaks can get a `…` in the issue but not in the preview.
+- Here the section heading has runs of spaces collapsed before it is cut to 60 characters; in the browser it is used as it is.
+
+Neither changes what a reader wrote, only how the title is trimmed. They are noted here so that the two copies can be brought back into step.
+:::
+
+## Creating the issue
+
+`createIssue_` calls the GitHub REST API with the token and the `reader-comment` label (or your `LABEL`). `muteHttpExceptions` lets the code read GitHub's error instead of Apps Script throwing its own, and anything other than `201 Created` is treated as a failure.
+
+```{.js file="apps-script/Code.gs" from="function createIssue_(" to="}"}
+```
+
+## The hourly limit
+
+`allow_` keeps one counter per clock hour in the script cache. The script lock stops two simultaneous requests from both reading the same count and both going through. The cache entry lasts a little over an hour (3,700 seconds), long enough to cover its hour.
+
+```{.js file="apps-script/Code.gs" from="/** Simple shared limit" to="}"}
+```
+
+The comment above it says "rolling hour", but the counter resets at the top of each clock hour, so up to twice `MAX_PER_HOUR` can arrive within one 60-minute span that straddles the change. Google may also clear the cache early, which resets the count.
+
+## Small helpers
+
+`clean_` turns anything into a trimmed string with Unix line endings, cut to a maximum length.
+
+```{.js file="apps-script/Code.gs" from="function clean_(v, max)" to="}"}
+```
+
+`noMentions_` puts an invisible zero-width space after each `@` that is followed by a letter or digit. The text looks the same, but GitHub no longer sees `@username`, so a comment cannot notify anyone from your account.
+
+```{.js file="apps-script/Code.gs" from="function noMentions_(s)" to="}"}
+```
+
+`escapeInline_` puts a backslash before Markdown's special characters, so a name such as `*Jane*` shows as typed.
+
+```{.js file="apps-script/Code.gs" from="function escapeInline_(s)" to="}"}
+```
+
+`reply_` sends every answer as JSON.
+
+```{.js file="apps-script/Code.gs" from="function reply_(obj)" to="}"}
+```
+
+## Updating the deployment
+
+After changing `Code.gs`, use **Deploy → Manage deployments → Edit → Version: New version**. That keeps the same `/exec` URL. **New deployment** gives a new URL, which every site using the relay would then need.
