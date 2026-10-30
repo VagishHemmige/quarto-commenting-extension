@@ -1,0 +1,131 @@
+---
+title: "3. Browser script"
+---
+
+The script runs in the reader's browser. It shows the **💬 Comment** button next to a selection, runs the comment dialog, and sends the comment to the relay. It has no dependencies, and the whole file is wrapped in a function so that nothing except what the filter set (`window.ISSUE_COMMENTS`) is shared with the page.
+
+::: {.callout-note .source-callout title="Source code" icon=false}
+[`_extensions/issue-comments/issue-comments.js`](https://github.com/VagishHemmige/quarto-commenting-extension/blob/main/_extensions/issue-comments/issue-comments.js)
+
+Helpers it shares with [the relay](relay.qmd): `issueTitle` must match `buildIssue_` in `apps-script/Code.gs`.
+:::
+
+## Helpers
+
+`store` reads or saves one value in `localStorage`. It is wrapped in `try` because some browsers throw when storage is blocked (private windows, strict privacy settings); the script then simply doesn't remember the name.
+
+```{.js file="_extensions/issue-comments/issue-comments.js" from="function store(key, value)" to="}"}
+```
+
+`el` builds every element the script adds. Text always goes in through `textContent` or text nodes, never `innerHTML`, so nothing a reader types and no setting can become markup.
+
+```{.js file="_extensions/issue-comments/issue-comments.js" from="function el(tag" to="}"}
+```
+
+`safeLink` accepts the `contact` setting only as an ordinary web, mail or relative link, so a `javascript:` address in a site's settings cannot run when a reader clicks it.
+
+```{.js file="_extensions/issue-comments/issue-comments.js" from="// Only allow ordinary links" to="}"}
+```
+
+`issueTitle` builds the issue title for the preview: the section in brackets, then the first 60 characters of the comment. The relay builds the real title with its own copy of this logic.
+
+```{.js file="_extensions/issue-comments/issue-comments.js" from="// Must match buildIssue_" to="}"}
+```
+
+## Starting up
+
+`init` runs once the page has loaded. Without an `endpoint` it does nothing, so a page where the filter ran but the settings are incomplete is unaffected. Selections are only accepted inside `root`, which is Quarto's main content area when present; this keeps the sidebar, table of contents and footer out.
+
+```{.js file="_extensions/issue-comments/issue-comments.js" from="function init()"}
+```
+
+```{.js file="_extensions/issue-comments/issue-comments.js" from="const owner = cfg.owner"}
+```
+
+```{.js file="_extensions/issue-comments/issue-comments.js" from="const root =" to="let current = null; // { quote, section, anchor }"}
+```
+
+`current` holds the passage, section and anchor the next comment will be about.
+
+## The Comment buttons
+
+There is one floating button, moved to each new selection. Pressing a mouse button normally clears the selection, so `mousedown` is cancelled to keep the highlighted text in place until the click opens the dialog.
+
+```{.js file="_extensions/issue-comments/issue-comments.js" from="// ---- Floating" to="document.body.appendChild(selBtn);"}
+```
+
+With `page-button: true` there is also a fixed button for comments about the page as a whole, which have no passage and use the page title as the section.
+
+```{.js file="_extensions/issue-comments/issue-comments.js" from="if (cfg.pageButton) {" to="}"}
+```
+
+## Building the dialog
+
+The dialog is a native `<dialog>` element, which the browser keeps keyboard focus inside and closes with Escape. It is built once and reused. The edit stage has the passage, the name and comment fields, the passcode field when enabled, and the honeypot: a field placed off-screen and hidden from screen readers, so only a bot fills it in.
+
+```{.js file="_extensions/issue-comments/issue-comments.js" from="// ---- Dialog: edit stage" }
+```
+
+The notice states who posts the issue, what becomes public, and that only the owner can change or remove it.
+
+```{.js file="_extensions/issue-comments/issue-comments.js" from="const contactText = () =>" to="]);"}
+```
+
+```{.js file="_extensions/issue-comments/issue-comments.js" from="const editStage = el(" to="editStage.appendChild(notice);"}
+```
+
+The preview stage is an empty card that `fillPreview` fills in. Both stages, the status line and the two action buttons share one form.
+
+```{.js file="_extensions/issue-comments/issue-comments.js" from="// ---- Dialog: preview stage" to="document.body.appendChild(dialog);"}
+```
+
+## Moving between stages
+
+The dialog is always in one of three stages. `setStage` shows the right parts and relabels the two buttons for each, so the left button is **Cancel**, then **Edit**, then **Close**, and the right is **Preview** or **Post publicly**. The left button goes back from the preview, and otherwise closes the dialog.
+
+```{.js file="_extensions/issue-comments/issue-comments.js" from="let stage = \"edit\";" to="});"}
+```
+
+`openDialog` loads a passage into the dialog and resets it. Focus goes to the comment box when the name is already remembered, and to the name box otherwise.
+
+```{.js file="_extensions/issue-comments/issue-comments.js" from="function openDialog(ctx)" to="}"}
+```
+
+`fillPreview` draws the issue as it will appear. It mirrors the text `buildIssue_` writes on the relay, without the section link.
+
+```{.js file="_extensions/issue-comments/issue-comments.js" from="function fillPreview(" to="}"}
+```
+
+## Posting
+
+`post` sends the comment and shows the result. The body is JSON, but labelled `text/plain`: a JSON content type would make the browser send a CORS preflight request first, which Apps Script web apps cannot answer, and the post would be blocked. Apps Script follows a redirect to return its reply, which `fetch` follows automatically. Any `{ ok: false }` reply is shown to the reader as the relay's own message.
+
+```{.js file="_extensions/issue-comments/issue-comments.js" from="async function post(" to="}"}
+```
+
+The form's submit handler runs the browser's own validation of the required fields, tidies the name, remembers it, and then either shows the preview or posts.
+
+```{.js file="_extensions/issue-comments/issue-comments.js" from="form.addEventListener(\"submit\"" to="});"}
+```
+
+## Tracking the selection
+
+`sectionFor` finds the section a passage belongs to. Quarto wraps each heading and its content in a `<section>` with the heading's `id`, so the nearest enclosing `section[id]` gives both the heading text and the anchor for the issue's link.
+
+```{.js file="_extensions/issue-comments/issue-comments.js" from="function sectionFor(node)" to="}"}
+```
+
+`update` decides whether to show the button and where. It ignores selections while the dialog is open, ones shorter than two characters, and ones outside the main content. The button goes just under the last line of the selection, kept inside the window.
+
+```{.js file="_extensions/issue-comments/issue-comments.js" from="function update()" to="}"}
+```
+
+`selectionchange` fires many times while a reader drags, so `update` runs only once the selection has been still for 120 milliseconds. Resizing the window reflows the text, so it repositions the button too.
+
+```{.js file="_extensions/issue-comments/issue-comments.js" from="let timer = null;" to="window.addEventListener(\"resize\", schedule);"}
+```
+
+Finally, `init` runs straight away if the page has already loaded, or as soon as it has.
+
+```{.js file="_extensions/issue-comments/issue-comments.js" from="if (document.readyState === \"loading\")" to="}"}
+```

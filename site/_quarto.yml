@@ -1,0 +1,82 @@
+# Website explaining how the issue-comments extension works, file by file.
+# The source is this folder. A GitHub Action (.github/workflows/publish.yml)
+# renders it and publishes it to the gh-pages branch, which GitHub Pages
+# serves. `quarto add` copies only _extensions/issue-comments/, so none of
+# this reaches people who install the extension.
+project:
+  type: website
+  output-dir: _site
+  render:
+    - index.qmd
+    - quarto/**
+
+author:
+  - name: "Vagish Hemmige"
+
+website:
+  title: "issue-comments"
+  site-url: https://vagishhemmige.github.io/quarto-commenting-extension
+  repo-url: https://github.com/VagishHemmige/quarto-commenting-extension
+  repo-branch: main
+  repo-actions: [edit, issue]
+  page-navigation: true
+
+  sidebar:
+    title: "issue-comments"
+    style: docked
+    search: true
+    contents:
+      - href: index.qmd
+        text: Home
+
+      - section: Background
+        contents:
+          - href: quarto/how-it-works.qmd
+            text: How it works
+          - href: quarto/security.qmd
+            text: Security and privacy
+
+      # One numbered page per source file, in the order a comment passes through them.
+      - section: Source code
+        contents:
+          - href: quarto/manifest.qmd
+            text: 1. Manifest
+          - href: quarto/filter.qmd
+            text: 2. Lua filter
+          - href: quarto/browser.qmd
+            text: 3. Browser script
+          - href: quarto/styles.qmd
+            text: 4. Styles
+          - href: quarto/relay.qmd
+            text: 5. Apps Script relay
+
+      - href: quarto/about.qmd
+        text: About
+
+# Code on the pages comes from the real files through this filter; see the
+# comment at the top of site-tools/source-snippet.lua. Keep repo-url and
+# repo-branch the same as above; levels-up: 1 because this project is the
+# site/ folder and the files it shows are in the repository root.
+source-snippet:
+  repo-url: https://github.com/VagishHemmige/quarto-commenting-extension
+  repo-branch: main
+  levels-up: 1
+
+filters:
+  - site-tools/source-snippet.lua
+  # To let readers comment on this site with the extension itself, set up a
+  # relay (README, step 2) for this repo and uncomment:
+  # - issue-comments
+
+# issue-comments:
+#   endpoint: https://script.google.com/macros/s/XXXXXXXX/exec
+#   contact: https://github.com/VagishHemmige
+
+format:
+  html:
+    theme: cosmo
+    css: site-tools/site.css
+    toc: true
+    page-layout: full
+    code-copy: true
+    highlight-style: github

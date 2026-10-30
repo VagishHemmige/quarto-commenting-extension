@@ -1,0 +1,71 @@
+---
+title: "2. Lua filter"
+---
+
+The filter runs once for each page Quarto renders. It decides whether the page gets commenting, settles the settings, and adds the script, the styles and the settings to the page. It does not change the page's content.
+
+::: {.callout-note .source-callout title="Source code" icon=false}
+[`_extensions/issue-comments/issue-comments.lua`](https://github.com/VagishHemmige/quarto-commenting-extension/blob/main/_extensions/issue-comments/issue-comments.lua)
+:::
+
+## The settings it accepts
+
+The comment at the top of the file is the reference for the `issue-comments:` block. Only `endpoint` is required.
+
+```{.lua file="_extensions/issue-comments/issue-comments.lua" from="-- issue-comments: let readers"}
+```
+
+## Reading YAML values
+
+Quarto hands settings to a filter as Pandoc values, not plain strings: `owner: Jane Doe` arrives as a list of words. `str` turns any value into text, and treats an empty value as missing so that `contact: ""` behaves like no `contact` at all.
+
+```{.lua file="_extensions/issue-comments/issue-comments.lua" from="local function str(v)" to="end"}
+```
+
+`bool` gives each on/off setting its default when it is absent. YAML `true` arrives as a Lua boolean, but a value written as a string (`"yes"`, `"true"`) is accepted too.
+
+```{.lua file="_extensions/issue-comments/issue-comments.lua" from="local function bool(" to="end"}
+```
+
+`first_author` provides the default `owner`. In Quarto, `author` can be written as a single name, a list of names, or a list of maps with a `name` field (the form most templates use); this takes the first name in any of the three.
+
+```{.lua file="_extensions/issue-comments/issue-comments.lua" from="local function first_author" to="end"}
+```
+
+## Deciding whether the page gets commenting
+
+The work happens in `Meta`, which Pandoc calls once with the page's metadata. It returns early, leaving the page unchanged, for any non-HTML output, so PDF and Word renders of the same source are untouched.
+
+```{.lua file="_extensions/issue-comments/issue-comments.lua" from="if not quarto.doc.is_format(" to="end"}
+```
+
+A page with no `issue-comments:` block, or with `issue-comments: false`, is also left alone. That is how a page can opt out of a site-wide setting. A block that is not a map (for example `issue-comments: true`) is a mistake, so it produces a warning rather than silently doing nothing.
+
+```{.lua file="_extensions/issue-comments/issue-comments.lua" from="local cfg = meta[\"issue-comments\"]"}
+```
+
+Without an `endpoint` there is nowhere to send comments, so the page is left alone with a warning.
+
+```{.lua file="_extensions/issue-comments/issue-comments.lua" from="local endpoint = str(" to="end"}
+```
+
+## Settling the settings
+
+These are the six values the browser script receives. The keys are camel case (`pageButton`) because they become JavaScript properties. A missing `contact` is allowed, since readers are still told who to contact, but Quarto warns because they would have no link to follow.
+
+```{.lua file="_extensions/issue-comments/issue-comments.lua" from="local settings = {" to="end"}
+```
+
+## Loading the script and styles
+
+`add_html_dependency` copies the JavaScript and CSS into the site's `site_libs/` folder and links them from the page. The `version` is part of the folder name there, so it should be kept in step with the manifest.
+
+```{.lua file="_extensions/issue-comments/issue-comments.lua" from="quarto.doc.add_html_dependency" to="})"}
+```
+
+## Passing the settings to the page
+
+The settings go into the page's `<head>` as a global variable that the script reads when it starts. Encoding them with `quarto.json.encode` handles quotes and special characters. The extra replacement of `</` covers the one case JSON does not: a value such as `contact: "</script><script>…"` would otherwise end the script tag and let the rest run as HTML.
+
+```{.lua file="_extensions/issue-comments/issue-comments.lua" from="-- Escape \"</\""}
+```

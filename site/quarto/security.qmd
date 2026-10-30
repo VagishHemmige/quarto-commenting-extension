@@ -1,0 +1,42 @@
+---
+title: "Security and privacy"
+---
+
+The extension lets anyone on the internet cause your GitHub account to open an issue. This page sets out what limits that, so you can judge whether the limits are enough for your site.
+
+## The token
+
+The GitHub token is stored only in the Apps Script project's Script Properties. The page never receives it: the filter writes only `endpoint`, `owner`, `contact` and three on/off settings into the page, and the relay's replies contain only `ok`, `error`, `number` and `url`.
+
+The relay is deployed to **Execute as: Me**, so it acts as you, and **Who has access: Anyone**, so readers can reach it without signing in. Anyone who finds the `/exec` URL in your page source can therefore send it requests. What protects you is the token's scope. A fine-grained token limited to one repository with **Issues: Read and write** and nothing else means that, even if the relay had a bug or the token leaked, the damage is limited to issues in that one repository.
+
+## Guards on the relay
+
+| Guard | Stops | Does not stop |
+|---|---|---|
+| Hidden "website" field (honeypot) | simple bots that fill in every field; they get a fake success | anyone who reads the page's code |
+| `SITE_PREFIX` | other sites embedding your relay; casual reuse of the URL | a request crafted by hand, since the page address is supplied by the sender |
+| `PASSCODE` (optional) | strangers, if you share the passcode only with intended readers | anyone you've told it to |
+| `MAX_PER_HOUR` (default 20) | a flood of issues | a slow trickle; one person using up the allowance for everyone |
+| Length limits (name 80, comment 5,000, passage about 1,600, page 500 characters) | oversized issues | — |
+| `@` mentions neutralised | comments pinging GitHub users from your account | — |
+
+The hourly limit counts all readers together, in clock hours, and the count lives in Apps Script's cache, which Google may clear early. Treat it as a brake, not a guarantee. If spam does arrive, turn on the passcode, lower `MAX_PER_HOUR`, or close the deployment.
+
+## Guards on the page
+
+- Everything a reader types, and every setting, is put on the page as text (`textContent`), never as HTML, so a comment or a setting cannot inject markup.
+- The `contact` link is used only if it is an `http`, `https`, `mailto` or relative address, so a `javascript:` URL in the settings cannot run.
+- The filter escapes `</` in the settings it writes into the page, so a value cannot close the `<script>` tag early.
+
+## What readers' data goes where
+
+A reader's name, comment, the highlighted passage, the section heading and anchor, and the page address go to the relay, and from there into a public issue (all except the anchor and page, which form the section link). Their name is also kept in their own browser's `localStorage` to save retyping. Nothing else is collected: no email, no GitHub identity, no cookies. Apps Script does not give the script the reader's IP address, though Google keeps its own request logs.
+
+Readers are told before posting that the comment is public, that you post it, and that they cannot edit or delete it themselves; they are shown the exact issue first unless you set `preview: false`.
+
+## Limits that follow from the design
+
+- **Names are not verified.** Anyone can type any name.
+- **Comments are posted as typed.** GitHub renders Markdown in the comment and passage, so a reader can add links or formatting. The name and section heading are escaped.
+- **Readers are not notified of replies**, because they have no GitHub identity in the issue.
