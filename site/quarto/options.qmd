@@ -1,0 +1,41 @@
+---
+title: "Options"
+---
+
+There are two sets of settings: the page's, in Quarto, and the relay's, in Apps Script.
+
+## Page settings
+
+These go in the `issue-comments:` block in `_quarto.yml` or a page's front matter. Only `endpoint` is required.
+
+| Option | Default | What it does |
+|---|---|---|
+| `endpoint` | *(required)* | The Apps Script web app URL, ending in `/exec`. |
+| `owner` | the document's first `author`, else "the site owner" | The name readers are told will post the issue. |
+| `contact` | none (Quarto warns) | Where readers go to change or remove a comment: a contact page, your GitHub profile, or `mailto:you@example.com`. Only `http`, `https`, `mailto` and relative links are used. |
+| `preview` | `true` | Show readers the exact issue before it posts. |
+| `passcode` | `false` | Ask readers for a shared passcode. Also set the `PASSCODE` relay setting. Use it only if spam appears. |
+| `page-button` | `false` | Also show a fixed "Comment on this page" button, for comments not tied to a passage. |
+
+With the block in `_quarto.yml`, a single page can opt out with `issue-comments: false` in its front matter.
+
+## Relay settings
+
+These are Script Properties in the Apps Script project (**Project Settings → Script Properties**). A change takes effect on the next comment, with no redeployment.
+
+| Property | Default | What it does |
+|---|---|---|
+| `GITHUB_TOKEN` | *(required)* | The fine-grained token: one repository, **Issues: Read and write**. |
+| `GITHUB_REPO` | *(required)* | The repository that receives comments, as `owner/repo`. |
+| `SITE_PREFIX` | none | Only pages whose address starts with this can post. Recommended. |
+| `LABEL` | `reader-comment` | The label put on every comment's issue, so you can filter them. |
+| `MAX_PER_HOUR` | `20` | The most comments accepted in one clock hour, from all readers combined. |
+| `PASSCODE` | none | The shared passcode, when the page setting `passcode` is `true`. |
+
+## Maintenance
+
+**Token expiry.** When the token expires, commenting stops and readers see "Something went wrong." Make a new token as in [Installation](installation.qmd#make-a-github-token) and replace `GITHUB_TOKEN` in Script Properties. No redeployment is needed.
+
+**Updating the script.** After changing `Code.gs`, use **Deploy → Manage deployments → Edit → Version: New version**. That keeps the same `/exec` URL. **New deployment** gives a new URL, which every page using the relay would then need.
+
+**Changing the issue format.** The page previews the issue itself, so the format is written twice: `buildIssue_` in `Code.gs`, and `issueTitle` and `fillPreview` in `issue-comments.js`. Change both together. See [How it works](how-it-works.qmd#two-copies-of-the-issue-format).

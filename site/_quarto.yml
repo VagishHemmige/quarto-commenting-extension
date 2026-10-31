@@ -29,6 +29,13 @@ website:
       - href: index.qmd
         text: Home
 
+      - section: Using it
+        contents:
+          - href: quarto/installation.qmd
+            text: Installation
+          - href: quarto/options.qmd
+            text: Options
+
       - section: Background
         contents:
           - href: quarto/how-it-works.qmd
@@ -65,7 +72,7 @@ source-snippet:
 filters:
   - site-tools/source-snippet.lua
   # To let readers comment on this site with the extension itself, set up a
-  # relay (README, step 2) for this repo and uncomment:
+  # relay (Installation page, step 3) for this repo and uncomment:
   # - issue-comments
 
 # issue-comments:
