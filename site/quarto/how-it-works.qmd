@@ -9,14 +9,14 @@ The extension is five files in three places, and each runs at a different time.
 | [`_extension.yml`](manifest.qmd) | when Quarto loads the extension | your computer or CI |
 | [`issue-comments.lua`](filter.qmd) | once per page, at render time | your computer or CI |
 | [`issue-comments.js`](browser.qmd) and [`.css`](styles.qmd) | every time a reader opens a page | the reader's browser |
-| [`Code.gs`](relay.qmd) | every time a reader posts | Google's servers, as you |
+| [`Code.gs`](relay.qmd) | every time a reader posts | Google's servers, as you, posting as your GitHub App |
 
 ## At render time
 
 You turn the extension on by listing `issue-comments` under `filters:` and giving it an `issue-comments:` block in `_quarto.yml` or a page's front matter. For each page, the Lua filter:
 
 1. stops unless the output is HTML and the block has an `endpoint`;
-2. works out the remaining settings, falling back to the document's first `author` for `owner`;
+2. works out the remaining settings, falling back to the document's first `author` for `owner`, and checks any custom wording;
 3. attaches `issue-comments.js` and `issue-comments.css` to the page; and
 4. writes the settings into the page's `<head>` as `window.ISSUE_COMMENTS`.
 
@@ -36,8 +36,9 @@ sequenceDiagram
   P-->>R: shows the exact issue (preview)
   R->>P: Post publicly
   P->>S: POST JSON as text/plain
-  S->>S: honeypot, passcode, site, length and hourly checks
-  S->>G: POST /repos/owner/repo/issues (your token)
+  S->>S: honeypot, page to repository, hourly, passcode and length checks
+  S->>G: app installation on that repository, then a 1-hour token (cached)
+  S->>G: POST /repos/owner/repo/issues (as the app's bot)
   G-->>S: 201 Created, issue number and URL
   S-->>P: { ok: true, number, url }
   P-->>R: Thanks! Posted as issue 12
@@ -49,7 +50,7 @@ The request is sent as `text/plain` so the browser does not first send a CORS "p
 
 ## On the relay
 
-`doPost` reads your Script Properties, runs its checks, builds the issue text, and creates the issue with your token. It always answers with JSON of the form `{ ok, error }` or `{ ok, number, url }`, which the page shows to the reader. `doGet` exists only so that opening the `/exec` URL in a browser confirms the deployment is live.
+`doPost` reads your Script Properties, works out the repository from the page's address, runs its checks, builds the issue text, and creates the issue as your GitHub App, using a token limited to that repository. Because the repository comes from the page, one relay serves every site whose repository has the app installed. It always answers with JSON of the form `{ ok, error }` or `{ ok, number, url }`, which the page shows to the reader. `doGet` exists only so that opening the `/exec` URL in a browser confirms the deployment is live.
 
 ## Two copies of the issue format
 

@@ -10,14 +10,64 @@ These go in the `issue-comments:` block in `_quarto.yml` or a page's front matte
 
 | Option | Default | What it does |
 |---|---|---|
-| `endpoint` | *(required)* | The Apps Script web app URL, ending in `/exec`. |
-| `owner` | the document's first `author`, else "the site owner" | The name readers are told will post the issue. |
+| `endpoint` | *(required)* | The Apps Script web app URL, ending in `/exec`. Every site can use the same one. |
+| `owner` | the document's first `author`, else "the site owner" | The name readers are told the issue is posted on behalf of. |
 | `contact` | none (Quarto warns) | Where readers go to change or remove a comment: a contact page, your GitHub profile, or `mailto:you@example.com`. Only `http`, `https`, `mailto` and relative links are used. |
 | `preview` | `true` | Show readers the exact issue before it posts. |
-| `passcode` | `false` | Ask readers for a shared passcode. Also set the `PASSCODE` relay setting. Use it only if spam appears. |
+| `passcode` | `false` | Show a passcode box. Set it when the relay has `PASSCODE`. |
 | `page-button` | `false` | Also show a fixed "Comment on this page" button, for comments not tied to a passage. |
+| `text` | the wording below | Replace any of the wording readers see. |
 
 With the block in `_quarto.yml`, a single page can opt out with `issue-comments: false` in its front matter.
+
+## Wording
+
+Everything readers see can be reworded with `text:`. Give only the keys you want to change; the rest keep their defaults. Quarto warns about a key it doesn't recognise.
+
+```yaml
+issue-comments:
+  endpoint: https://script.google.com/macros/s/XXXXXXXX/exec
+  contact: mailto:jane@example.com
+  text:
+    heading: Comment on the draft plan
+    notice: >-
+      This draft is shared with the study team only. Comments are filed as
+      GitHub issues for {owner}; to change or remove one, {contact}.
+    post: Send to the team
+```
+
+A word in braces is filled in where it appears. `{owner}` works in every key.
+
+| Key | Default |
+|---|---|
+| `button` | 💬 Comment |
+| `page-button` | 💬 Comment on this page |
+| `heading` | Leave a comment |
+| `preview-heading` | Check before posting |
+| `section` | Section: {section} |
+| `name-label` | Your name |
+| `comment-label` | Comment |
+| `passcode-label` | Passcode |
+| `notice` | Comments are posted publicly as GitHub issues on behalf of {owner}, together with your name, the highlighted text and a link to this section. You can't edit or delete a comment after posting; to change or remove one, {contact}. Your name is saved in this browser so you don't have to retype it. |
+| `contact-link` | contact {owner} *(the text of the `{contact}` link)* |
+| `preview-intro` | This is exactly what will be posted publicly on GitHub on behalf of {owner}: |
+| `cancel`, `edit`, `close` | Cancel, Edit, Close |
+| `preview`, `post` | Preview, Post publicly |
+| `posting` | Posting… |
+| `thanks` | Thanks! Posted as {issue}. |
+| `issue-link` | issue #{number} *(the text of the `{issue}` link)* |
+
+Wording is always shown as plain text, so nothing in it can add HTML to the page. Three things are not set here:
+
+- **The issue itself** (title, "Submitted by", the section link) is written by the relay, so a reader can't change it, and the preview shows it as it will be.
+- **Error messages**, such as "That passcode is not correct", come from the relay.
+- **The notice should stay true.** If you reword it, keep telling readers that comments are public, who receives them, and how to have one removed.
+
+## Passcode {#passcode}
+
+A passcode keeps commenting to the people you give it to. Set `PASSCODE` in the relay's Script Properties, and `passcode: true` on every site that uses the relay, so readers see the box. One passcode covers all your sites.
+
+Use a long phrase, such as four unrelated words, rather than something memorable. Wrong guesses count against `MAX_PER_HOUR`, so they can't be tried quickly, but that also means a run of guesses can use up a site's allowance for an hour. To change the passcode, change the property; readers aren't asked to remember it between visits.
 
 ## Relay settings
 
@@ -25,16 +75,35 @@ These are Script Properties in the Apps Script project (**Project Settings → S
 
 | Property | Default | What it does |
 |---|---|---|
-| `GITHUB_TOKEN` | *(required)* | The fine-grained token: one repository, **Issues: Read and write**. |
-| `GITHUB_REPO` | *(required)* | The repository that receives comments, as `owner/repo`. |
-| `SITE_PREFIX` | none | Only pages whose address starts with this can post. Recommended. |
+| `GITHUB_APP_ID` | *(required)* | The App ID from your GitHub App's settings page. |
+| `GITHUB_APP_KEY` | *(required)* | The app's private key: the whole `.pem` file. Either format GitHub uses is accepted, with or without line breaks. |
+| `GITHUB_OWNER` | none | Your GitHub user name. A page at `https://<owner>.github.io/<repo>/…` sends its comments to `<owner>/<repo>`. |
+| `REPO_MAP` | none | Sites at any other address, as JSON from address to repository. See below. |
+| `PASSCODE` | none | The passcode readers must enter. See [Passcode](#passcode). |
 | `LABEL` | `reader-comment` | The label put on every comment's issue, so you can filter them. |
-| `MAX_PER_HOUR` | `20` | The most comments accepted in one clock hour, from all readers combined. |
-| `PASSCODE` | none | The shared passcode, when the page setting `passcode` is `true`. |
+| `MAX_PER_HOUR` | `20` | The most comments accepted for one repository in any 60 minutes. Each repository has its own count. |
+
+Whichever way a page is matched, a repository only receives comments if the app is installed on it.
+
+### `REPO_MAP`
+
+`REPO_MAP` covers a site on its own domain, a user site (`https://<owner>.github.io/` itself), a site whose comments should go to a different repository, and `quarto preview`:
+
+```json
+{
+  "https://plan.example.org/": "VagishHemmige/USRDS",
+  "https://vagishhemmige.github.io/HIV-SLK/": "VagishHemmige/HIV-SLK-comments",
+  "http://localhost:4200/": "VagishHemmige/test-comments"
+}
+```
+
+Each address is the start of the page addresses it covers. When several match, the longest wins, and a match here takes priority over the `GITHUB_OWNER` rule. Plain `http` is accepted only for `localhost`, for previews. `quarto preview` can pick a different port each time, so give it one with `--port 4200`.
 
 ## Maintenance
 
-**Token expiry.** When the token expires, commenting stops and readers see "Something went wrong." Make a new token as in [Installation](installation.qmd#make-a-github-token) and replace `GITHUB_TOKEN` in Script Properties. No redeployment is needed.
+**The private key.** It doesn't expire. To replace it, generate a new one on the app's page, paste it into `GITHUB_APP_KEY`, and delete the old key on the app's page. No redeployment is needed.
+
+**Adding a site.** Install the app on its repository, and give the site the same `endpoint`. See [Adding another site](installation.qmd#adding-another-site).
 
 **Updating the script.** After changing `Code.gs`, use **Deploy → Manage deployments → Edit → Version: New version**. That keeps the same `/exec` URL. **New deployment** gives a new URL, which every page using the relay would then need.
 

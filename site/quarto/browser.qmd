@@ -10,6 +10,18 @@ The script runs in the reader's browser. It shows the **💬 Comment** button ne
 Helpers it shares with [the relay](relay.qmd): `issueTitle` must match `buildIssue_` in `apps-script/Code.gs`.
 :::
 
+## Wording
+
+Every string a reader sees is in one table, so a site can replace any of them with the `text:` option (see [Options](options.qmd#wording)) without touching the script. A `{placeholder}` marks where a value goes in.
+
+```{.js file="_extensions/issue-comments/issue-comments.js" from="// Every string readers see." to="};"}
+```
+
+`fill` splits a string at its placeholders and puts each value in place. A value can be text or an element, which is how the `{contact}` link sits inside the notice. Unknown placeholders are left as written, and `hasOwnProperty` stops a word like `{constructor}` from finding something built into JavaScript.
+
+```{.js file="_extensions/issue-comments/issue-comments.js" from="// Splits a string on its {placeholders}" to="}"}
+```
+
 ## Helpers
 
 `store` reads or saves one value in `localStorage`. It is wrapped in `try` because some browsers throw when storage is blocked (private windows, strict privacy settings); the script then simply doesn't remember the name.
@@ -42,6 +54,8 @@ Helpers it shares with [the relay](relay.qmd): `issueTitle` must match `buildIss
 ```{.js file="_extensions/issue-comments/issue-comments.js" from="const owner = cfg.owner"}
 ```
 
+`T` is the wording, the defaults overlaid with the site's `text:`. `say` turns one entry into plain text, with `{owner}` always available. Everything below uses it rather than writing strings directly.
+
 ```{.js file="_extensions/issue-comments/issue-comments.js" from="const root =" to="let current = null; // { quote, section, anchor }"}
 ```
 
@@ -66,9 +80,12 @@ The dialog is a native `<dialog>` element, which the browser keeps keyboard focu
 ```{.js file="_extensions/issue-comments/issue-comments.js" from="// ---- Dialog: edit stage" }
 ```
 
-The notice states who posts the issue, what becomes public, and that only the owner can change or remove it.
+The notice states who the issue goes to, what becomes public, that only the owner can change or remove it, and that the name is saved in the browser. Its `{contact}` placeholder becomes the contact link, or plain text when there is no safe link.
 
-```{.js file="_extensions/issue-comments/issue-comments.js" from="const contactText = () =>" to="]);"}
+```{.js file="_extensions/issue-comments/issue-comments.js" from="const contactText = () =>"}
+```
+
+```{.js file="_extensions/issue-comments/issue-comments.js" from="const notice = el("}
 ```
 
 ```{.js file="_extensions/issue-comments/issue-comments.js" from="const editStage = el(" to="editStage.appendChild(notice);"}
@@ -81,7 +98,7 @@ The preview stage is an empty card that `fillPreview` fills in. Both stages, the
 
 ## Moving between stages
 
-The dialog is always in one of three stages. `setStage` shows the right parts and relabels the two buttons for each, so the left button is **Cancel**, then **Edit**, then **Close**, and the right is **Preview** or **Post publicly**. The left button goes back from the preview, and otherwise closes the dialog.
+The dialog is always in one of three stages. `setStage` shows the right parts and relabels the two buttons for each, so the left button is **Cancel**, then **Edit**, then **Close**, and the right is **Preview** or **Post publicly** (in the default wording). The left button goes back from the preview, and otherwise closes the dialog.
 
 ```{.js file="_extensions/issue-comments/issue-comments.js" from="let stage = \"edit\";" to="});"}
 ```
@@ -98,7 +115,7 @@ The dialog is always in one of three stages. `setStage` shows the right parts an
 
 ## Posting
 
-`post` sends the comment and shows the result. The body is JSON, but labelled `text/plain`: a JSON content type would make the browser send a CORS preflight request first, which Apps Script web apps cannot answer, and the post would be blocked. Apps Script follows a redirect to return its reply, which `fetch` follows automatically. Any `{ ok: false }` reply is shown to the reader as the relay's own message.
+`post` sends the comment and shows the result. The body is JSON, but labelled `text/plain`: a JSON content type would make the browser send a CORS preflight request first, which Apps Script web apps cannot answer, and the post would be blocked. Apps Script follows a redirect to return its reply, which `fetch` follows automatically. Any `{ ok: false }` reply is shown to the reader as the relay's own message. On success, the `thanks` wording is shown with its `{issue}` placeholder made into a link to the new issue.
 
 ```{.js file="_extensions/issue-comments/issue-comments.js" from="async function post(" to="}"}
 ```

@@ -7,11 +7,11 @@ subtitle: "Passage comments on a Quarto website, filed as GitHub issues, with no
 
 ```{mermaid}
 flowchart LR
-  A["Reader's browser<br/>(issue-comments.js)"] -- "name, comment,<br/>passage, page" --> B["Google Apps Script<br/>relay (Code.gs)<br/>holds your token"]
-  B -- "GitHub REST API" --> C["Issue in<br/>your repository"]
+  A["Reader's browser<br/>(issue-comments.js)"] -- "name, comment,<br/>passage, page" --> B["Google Apps Script<br/>relay (Code.gs)<br/>holds your app's key"]
+  B -- "GitHub REST API" --> C["Issue in the page's<br/>repository, by your bot"]
 ```
 
-Your GitHub token stays in an Apps Script project that you own and is never sent to the page.
+Issues are posted by your own GitHub App, so they show as from a bot rather than from you. Its key stays in an Apps Script project that you own and is never sent to the page. One relay serves all your sites.
 
 ## Using it
 
@@ -21,11 +21,11 @@ Your GitHub token stays in an Apps Script project that you own and is never sent
 quarto add VagishHemmige/quarto-commenting-extension
 ```
 
-then deploy [`apps-script/Code.gs`](https://github.com/VagishHemmige/quarto-commenting-extension/blob/main/apps-script/Code.gs) as a web app and add its URL to `_quarto.yml`. Every setting is on the [Options](quarto/options.qmd) page.
+then create a GitHub App, deploy [`apps-script/Code.gs`](https://github.com/VagishHemmige/quarto-commenting-extension/blob/main/apps-script/Code.gs) as a web app, and add its URL to `_quarto.yml`. Every setting is on the [Options](quarto/options.qmd) page.
 
 ## What this site is for
 
-This site explains how the extension works, file by file, for anyone who wants to check it before trusting it with their token, change it, or contribute. The code on every page is read from the repository's files when the site is built, so what you see is the code that `quarto add` installs.
+This site explains how the extension works, file by file, for anyone who wants to check it before trusting it with their GitHub account, change it, or contribute. The code on every page is read from the repository's files when the site is built, so what you see is the code that `quarto add` installs.
 
 - [How it works](quarto/how-it-works.qmd) follows one comment from a highlighted passage to a GitHub issue.
 - [Security and privacy](quarto/security.qmd) sets out what each guard protects against, and what it does not.
@@ -33,4 +33,4 @@ This site explains how the extension works, file by file, for anyone who wants t
 
 ## Status
 
-Version 0.2.0. It has been used end to end on a live GitHub Pages site, with comments arriving as issues. It has no automated tests.
+Version 0.3.0. Version 0.2.0 was used end to end on a live GitHub Pages site, with comments arriving as issues. 0.3.0 posts as a GitHub App, serves several repositories from one relay, and lets sites change the wording. It has been tested against a stand-in for GitHub but not yet on a live site, and the repository has no automated tests.

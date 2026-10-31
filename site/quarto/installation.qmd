@@ -6,7 +6,9 @@ Setting up commenting takes about ten minutes, once. You need:
 
 - a Quarto **website or HTML document** published somewhere public (GitHub Pages, Netlify, Quarto Pub, …); PDF and Word output are unaffected;
 - a GitHub repository to receive the comments as issues. It doesn't have to be the site's own repository;
-- a Google account, for the free Apps Script relay that holds your GitHub token.
+- a Google account, for the free Apps Script relay that holds your GitHub App's key.
+
+Steps 2 and 3 are done once. After that, one relay serves every site you add, and [another site](#adding-another-site) takes a couple of minutes.
 
 ::: {.callout-tip}
 ## Test on a repository you don't mind filling up
@@ -43,24 +45,24 @@ quarto add VagishHemmige/quarto-commenting-extension
 
 Answer **Y** when it asks to confirm. It adds the extension under `_extensions/`. Commit that folder with your site.
 
-## 2. Make a GitHub token
+## 2. Create a GitHub App
 
-The token lets the relay create issues as you. It is set up to do that and nothing else.
+A GitHub App is a GitHub account that belongs to the relay rather than to you. Issues it creates show as posted by a bot, such as **jdoe-comments[bot]**, so reader comments are easy to tell apart from your own, and GitHub notifies you of them as it would of anyone else's. The app is allowed to do one thing, work with issues, and only in the repositories you install it on.
 
-1. Open GitHub's form for a new fine-grained token: <https://github.com/settings/personal-access-tokens/new>. To get there by clicking instead, use your **profile picture → Settings** (your account's settings, not a repository's **Settings** tab), then **Developer settings**, which is the last item at the bottom of the left sidebar, then **Personal access tokens → Fine-grained tokens → Generate new token**.
-2. Give it a name, such as "issue-comments", and an expiry date. Commenting stops when the token expires, until you give the relay a new one.
-3. Under **Repository access**, choose **Only select repositories** and pick the repository that will receive comments.
-4. Under **Permissions**, add **Issues** and change its access to **Read and write**. GitHub adds it as **Read-only**, which won't work. Leave **Metadata** as Read-only; GitHub requires it.
+1. Open GitHub's form for a new app: <https://github.com/settings/apps/new>. To get there by clicking instead, use your **profile picture → Settings** (your account's settings, not a repository's), then **Developer settings** at the bottom of the left sidebar, then **GitHub Apps → New GitHub App**.
+2. **GitHub App name:** something like "jdoe-comments". The name has to be unused across all of GitHub, and it is what readers' issues will show as posted by.
+3. **Homepage URL:** your site's address, or your GitHub profile. It is required but not used.
+4. **Webhook:** untick **Active**. The relay only sends to GitHub; it never needs GitHub to call it.
+5. **Permissions → Repository permissions → Issues:** choose **Read and write**. Leave everything else at **No access**. GitHub adds **Metadata: Read-only** itself.
+6. **Where can this GitHub App be installed?** Choose **Only on this account**, then click **Create GitHub App**.
+7. On the app's page that opens, note the **App ID** near the top. Scroll to **Private keys** and click **Generate a private key**. A `.pem` file downloads. You will paste its contents into the relay in step 3, and you can then delete the file.
+8. Click **Install App** in the left sidebar, then **Install**. Choose **Only select repositories**, pick the repository that will receive comments, and click **Install**.
 
-   ![](../images/token-permissions.png){fig-alt="GitHub's token form with Only select repositories chosen and one repository selected, and Issues and Metadata both showing Access: Read-only. The Issues one has to be changed to Read and write."}
-
-5. Click **Generate token** and copy it straight away. GitHub shows it only once.
-
-Why only one repository? The relay accepts comments from anyone on the internet, so what the token can do is the limit on any damage. Scoped like this, even a leaked token could only create and edit issues in that one repository. See [Security and privacy](security.qmd).
+Why so narrow? The relay accepts comments from anyone on the internet, so what the app can do is the limit on any damage. Even if the private key leaked, it could only create and edit issues, as the bot, in the repositories the app is installed on. It could not touch your code or post as you. See [Security and privacy](security.qmd).
 
 ## 3. Create the relay in Google Apps Script
 
-The relay is a small script in your own Google account. It holds the token, checks each comment and creates the issue.
+The relay is a small script in your own Google account. It holds the app's key, checks each comment, works out which repository it is for, and creates the issue.
 
 1. Go to <https://script.google.com> and click **New project**. Rename it "issue-comments" by clicking "Untitled project" at the top.
 2. Open [`Code.gs` as plain text](https://raw.githubusercontent.com/VagishHemmige/quarto-commenting-extension/main/apps-script/Code.gs), select all and copy. In the script editor, delete everything in `Code.gs`, paste, and click the save icon.
@@ -68,11 +70,12 @@ The relay is a small script in your own Google account. It holds the token, chec
 
    | Property | Value |
    |---|---|
-   | `GITHUB_TOKEN` | the token from step 2 |
-   | `GITHUB_REPO` | `owner/repo`, the repository that receives comments |
-   | `SITE_PREFIX` | your site's published address, such as `https://owner.github.io/repo/`. Recommended: only pages whose address starts with this can post. |
+   | `GITHUB_APP_ID` | the App ID from step 2 |
+   | `GITHUB_APP_KEY` | the whole private key: open the `.pem` file in a text editor, copy everything including the `-----BEGIN` and `-----END` lines, and paste. It doesn't matter if the line breaks disappear. |
+   | `GITHUB_OWNER` | your GitHub user name. A page at `https://<owner>.github.io/<repo>/` sends its comments to `<owner>/<repo>`. |
+   | `PASSCODE` | optional: a passcode readers must enter. See [Options](options.qmd#passcode). |
 
-   Then click **Save script properties**. The optional properties are on the [Options](options.qmd#relay-settings) page.
+   Then click **Save script properties**. If your site is not at `https://<owner>.github.io/<repo>/`, also add `REPO_MAP` (see [Options](options.qmd#relay-settings)). The other optional properties are there too.
 4. Click **Deploy → New deployment**. Click the gear next to "Select type" and choose **Web app**. Set **Execute as: Me** and **Who has access: Anyone**, and click **Deploy**.
 5. Authorize when asked. Google says "Google hasn't verified this app", because the script is yours rather than a published app. Click **Advanced → Go to issue-comments (unsafe)**, then **Allow**.
 6. Copy the **Web app URL**. It starts `https://script.google.com/macros/s/` and ends in `/exec`. To find it again later, use **Deploy → Manage deployments**. Don't use a URL ending in `/dev`.
@@ -90,10 +93,12 @@ issue-comments:
   endpoint: https://script.google.com/macros/s/XXXXXXXX/exec
   owner: Jane Doe
   contact: mailto:jane@example.com
+  passcode: true   # only if you set PASSCODE in step 3
 ```
 
 - Put both at the top level of `_quarto.yml`, not under `website:` or `format:`.
-- `owner` is the name readers are told will post the issue. `contact` is where they go to change or remove a comment: an email link, a contact page or your GitHub profile.
+- `owner` is the name readers are told the issue is posted on behalf of. `contact` is where they go to change or remove a comment: an email link, a contact page or your GitHub profile.
+- Any wording readers see can be changed with a `text:` block; see [Options](options.qmd#wording).
 - If you already have a `filters:` list, add `- issue-comments` to it rather than starting a second one:
 
   ![](../images/quarto-yml-filters.png){fig-alt="A _quarto.yml file in an editor: a filters list with custom-callout and issue-comments, followed by the issue-comments block with endpoint, owner and contact."}
@@ -106,18 +111,21 @@ Render and publish the site the way you usually do. Commit all of the extension'
 
 ![](../images/files-to-commit.png){fig-alt="A source control panel listing the new files: _extension.yml, issue-comments.css, issue-comments.js and issue-comments.lua under _extensions, plus the changed _quarto.yml."}
 
-Then open the **published** page, highlight a sentence, click **💬 Comment** and post. The issue should appear in your repository with the `reader-comment` label.
+Then open the **published** page, highlight a sentence, click **💬 Comment** and post. The issue should appear in your repository with the `reader-comment` label, posted by your app's bot.
 
 ## If something doesn't work
 
 The dialog says "Comments are not accepted from this page."
-: The page's address doesn't start with `SITE_PREFIX`. This always happens in `quarto preview`, whose pages are on your own computer. Test on the published site, or leave `SITE_PREFIX` out while testing and add it afterwards. Otherwise check the prefix against the address bar, including capital letters and the trailing `/`.
+: The relay couldn't match the page to a repository the app is installed on. Check that the page's address is `https://<GITHUB_OWNER>.github.io/<repo>/…` (or is in `REPO_MAP`), and that the app is installed on that repository: **profile picture → Settings → Applications → Installed GitHub Apps → Configure**. This always happens in `quarto preview`, whose pages are on your own computer, unless you add the preview address to `REPO_MAP`; see [Options](options.qmd#relay-settings).
+
+The dialog says "That passcode is not correct."
+: The relay has `PASSCODE` set. If the page shows no passcode box, add `passcode: true` to the page's `issue-comments:` block.
 
 The dialog says "Something went wrong."
-: Most often the token: it lacks **Issues: Read and write**, it is for a different repository, or it has expired. The error itself is in Apps Script under **Executions**.
+: Most often the app: `GITHUB_APP_ID` is wrong, `GITHUB_APP_KEY` is incomplete, or the app lacks **Issues: Read and write**. The error itself is in Apps Script under **Executions**.
 
 The dialog says "Commenting is not configured yet."
-: `GITHUB_TOKEN` or `GITHUB_REPO` is missing from Script Properties.
+: `GITHUB_APP_ID` or `GITHUB_APP_KEY` is missing from Script Properties.
 
 There is no Comment button.
 : Check that `issue-comments` is in `filters:`, that the `issue-comments:` block has an `endpoint`, and that the `_extensions/` folder is committed if your site is rendered on GitHub. Quarto prints a warning when it renders a page whose `issue-comments:` block has no `endpoint`.
@@ -127,10 +135,19 @@ Posting shows an error such as "Failed to fetch".
 
 ## Adding another site
 
-Each relay sends to one repository and accepts comments from one site, because `GITHUB_REPO` and `SITE_PREFIX` each take one value. So a second site needs its own relay:
+One relay serves every repository the app is installed on, so a new site needs no new script:
 
-1. **Token.** Add the second repository to the token you already have: open it under Developer settings → Fine-grained tokens, choose **Edit**, add the repository, and save. A separate token also works, at the cost of a second expiry date to look after.
-2. **Relay.** On the first relay's **Project details** page, use the copy icon and rename the copy. In its Script Properties, set `GITHUB_REPO` and `SITE_PREFIX` for the second site, and check that `GITHUB_TOKEN` is there. Then deploy it as in step 3 and copy its own `/exec` URL.
-3. **Site.** Install the extension in the second site and give it the new `endpoint`.
+1. **App.** Add the new repository to the app: **profile picture → Settings → Applications → Installed GitHub Apps**, then **Configure** next to your app, add the repository under **Repository access**, and **Save**.
+2. **Site.** Install the extension in the new site (step 1) and turn it on (step 4) with the **same** `endpoint`.
 
-If both sites should send comments to the same repository, you can skip step 1.
+If the new site's address isn't `https://<GITHUB_OWNER>.github.io/<repo>/`, or its comments should go to a different repository than its own, add it to `REPO_MAP` too.
+
+## Moving an older relay to the app
+
+Relays set up before version 0.3.0 posted with a personal token and served one site each. To move one over without changing its `/exec` URL:
+
+1. Create and install the app (step 2), on every repository your sites send comments to.
+2. In the existing relay's Script Properties, add `GITHUB_APP_ID`, `GITHUB_APP_KEY` and `GITHUB_OWNER` (and `REPO_MAP` if needed). Keep the old ones for now.
+3. Replace the script with the new `Code.gs`, save, and use **Deploy → Manage deployments → Edit → Version: New version → Deploy**. This keeps the URL.
+4. Post a test comment from each site. Once they work, delete `GITHUB_TOKEN`, `GITHUB_REPO` and `SITE_PREFIX` from Script Properties, and revoke the old token on GitHub under **Developer settings → Personal access tokens**.
+5. Sites that had their own relays can switch their `endpoint` to this one. Then delete the extra Apps Script projects.
