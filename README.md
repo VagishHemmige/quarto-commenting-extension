@@ -55,7 +55,7 @@ Or copy `_extensions/issue-comments/` into your project's `_extensions/` folder.
 
 Step-by-step instructions, with screenshots and troubleshooting:
 [Installation](https://vagishhemmige.github.io/quarto-commenting-extension/quarto/installation.html).
-Every setting: [Options](https://vagishhemmige.github.io/quarto-commenting-extension/quarto/options.html).
+Every setting, and maintenance (token expiry, updating the script): [Options](https://vagishhemmige.github.io/quarto-commenting-extension/quarto/options.html).
 
 ## What readers see and what gets posted
 
@@ -97,16 +97,6 @@ The issue's author is your GitHub account. Every issue gets the
   `SITE_PREFIX` check, and the optional passcode. `@mentions` are
   neutralized so comments can't ping GitHub users from your account.
 - **Comments are posted as typed,** and GitHub renders any Markdown in them.
-
-## Maintenance
-
-- **Editing the script:** after changing `Code.gs`, use **Deploy → Manage
-  deployments → Edit → Version: New version**, which keeps the same URL. A
-  *new deployment* gives a new URL.
-- **Changing the issue format:** the page previews the issue text. If you
-  change `buildIssue_` in `Code.gs`, update `issueTitle` and `fillPreview` in
-  `issue-comments.js` to match.
-- **Token expiry:** replace `GITHUB_TOKEN` in Script Properties. No redeploy is needed.
 
 ## License
 
