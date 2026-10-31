@@ -1,5 +1,104 @@
 [
   {
+    "objectID": "quarto/installation.html",
+    "href": "quarto/installation.html",
+    "title": "Installation",
+    "section": "",
+    "text": "Setting up commenting takes about ten minutes, once. You need:",
+    "crumbs": [
+      "Using it",
+      "Installation"
+    ]
+  },
+  {
+    "objectID": "quarto/installation.html#what-readers-will-see",
+    "href": "quarto/installation.html#what-readers-will-see",
+    "title": "Installation",
+    "section": "What readers will see",
+    "text": "What readers will see\nA reader highlights a passage and clicks 💬 Comment:\n\nThey type their name and comment, and read who will post it and what becomes public:\n\nThey check the issue exactly as it will be posted:\n\nAnd they get a link to the issue:\n\nThe rest of this page sets that up.",
+    "crumbs": [
+      "Using it",
+      "Installation"
+    ]
+  },
+  {
+    "objectID": "quarto/installation.html#install-the-extension",
+    "href": "quarto/installation.html#install-the-extension",
+    "title": "Installation",
+    "section": "1. Install the extension",
+    "text": "1. Install the extension\nIn a terminal, in your Quarto project’s folder (the one with _quarto.yml), run:\nquarto add VagishHemmige/quarto-commenting-extension\nAnswer Y when it asks to confirm. It adds the extension under _extensions/. Commit that folder with your site.",
+    "crumbs": [
+      "Using it",
+      "Installation"
+    ]
+  },
+  {
+    "objectID": "quarto/installation.html#make-a-github-token",
+    "href": "quarto/installation.html#make-a-github-token",
+    "title": "Installation",
+    "section": "2. Make a GitHub token",
+    "text": "2. Make a GitHub token\nThe token lets the relay create issues as you. It is set up to do that and nothing else.\n\nOpen GitHub’s form for a new fine-grained token: https://github.com/settings/personal-access-tokens/new. To get there by clicking instead, use your profile picture → Settings (your account’s settings, not a repository’s Settings tab), then Developer settings, which is the last item at the bottom of the left sidebar, then Personal access tokens → Fine-grained tokens → Generate new token.\nGive it a name, such as “issue-comments”, and an expiry date. Commenting stops when the token expires, until you give the relay a new one.\nUnder Repository access, choose Only select repositories and pick the repository that will receive comments.\nUnder Permissions, add Issues and change its access to Read and write. GitHub adds it as Read-only, which won’t work. Leave Metadata as Read-only; GitHub requires it.\n\nClick Generate token and copy it straight away. GitHub shows it only once.\n\nWhy only one repository? The relay accepts comments from anyone on the internet, so what the token can do is the limit on any damage. Scoped like this, even a leaked token could only create and edit issues in that one repository. See Security and privacy.",
+    "crumbs": [
+      "Using it",
+      "Installation"
+    ]
+  },
+  {
+    "objectID": "quarto/installation.html#create-the-relay-in-google-apps-script",
+    "href": "quarto/installation.html#create-the-relay-in-google-apps-script",
+    "title": "Installation",
+    "section": "3. Create the relay in Google Apps Script",
+    "text": "3. Create the relay in Google Apps Script\nThe relay is a small script in your own Google account. It holds the token, checks each comment and creates the issue.\n\nGo to https://script.google.com and click New project. Rename it “issue-comments” by clicking “Untitled project” at the top.\nOpen Code.gs as plain text, select all and copy. In the script editor, delete everything in Code.gs, paste, and click the save icon.\nClick the gear icon (Project Settings) in the left sidebar. Under Script Properties, click Add script property and add:\n\n\n\n\n\n\n\nProperty\nValue\n\n\n\n\nGITHUB_TOKEN\nthe token from step 2\n\n\nGITHUB_REPO\nowner/repo, the repository that receives comments\n\n\nSITE_PREFIX\nyour site’s published address, such as https://owner.github.io/repo/. Recommended: only pages whose address starts with this can post.\n\n\n\nThen click Save script properties. The optional properties are on the Options page.\nClick Deploy → New deployment. Click the gear next to “Select type” and choose Web app. Set Execute as: Me and Who has access: Anyone, and click Deploy.\nAuthorize when asked. Google says “Google hasn’t verified this app”, because the script is yours rather than a published app. Click Advanced → Go to issue-comments (unsafe), then Allow.\nCopy the Web app URL. It starts https://script.google.com/macros/s/ and ends in /exec. To find it again later, use Deploy → Manage deployments. Don’t use a URL ending in /dev.\nOpen the URL in a browser tab. It should show {\"ok\":true,\"message\":\"issue-comments relay is running.\"}.",
+    "crumbs": [
+      "Using it",
+      "Installation"
+    ]
+  },
+  {
+    "objectID": "quarto/installation.html#turn-it-on-in-quarto",
+    "href": "quarto/installation.html#turn-it-on-in-quarto",
+    "title": "Installation",
+    "section": "4. Turn it on in Quarto",
+    "text": "4. Turn it on in Quarto\nAdd this to _quarto.yml for the whole site, or to one page’s front matter for just that page, using your /exec URL:\nfilters:\n  - issue-comments\n\nissue-comments:\n  endpoint: https://script.google.com/macros/s/XXXXXXXX/exec\n  owner: Jane Doe\n  contact: mailto:jane@example.com\n\nPut both at the top level of _quarto.yml, not under website: or format:.\nowner is the name readers are told will post the issue. contact is where they go to change or remove a comment: an email link, a contact page or your GitHub profile.\nIf you already have a filters: list, add - issue-comments to it rather than starting a second one:\n\n\nStarting with one page is the cautious choice: once it’s on in _quarto.yml, every page shows the Comment button.",
+    "crumbs": [
+      "Using it",
+      "Installation"
+    ]
+  },
+  {
+    "objectID": "quarto/installation.html#publish-and-test",
+    "href": "quarto/installation.html#publish-and-test",
+    "title": "Installation",
+    "section": "5. Publish and test",
+    "text": "5. Publish and test\nRender and publish the site the way you usually do. Commit all of the extension’s files with it, not just some:\n\nThen open the published page, highlight a sentence, click 💬 Comment and post. The issue should appear in your repository with the reader-comment label.",
+    "crumbs": [
+      "Using it",
+      "Installation"
+    ]
+  },
+  {
+    "objectID": "quarto/installation.html#if-something-doesnt-work",
+    "href": "quarto/installation.html#if-something-doesnt-work",
+    "title": "Installation",
+    "section": "If something doesn’t work",
+    "text": "If something doesn’t work\n\nThe dialog says “Comments are not accepted from this page.”\n\nThe page’s address doesn’t start with SITE_PREFIX. This always happens in quarto preview, whose pages are on your own computer. Test on the published site, or leave SITE_PREFIX out while testing and add it afterwards. Otherwise check the prefix against the address bar, including capital letters and the trailing /.\n\nThe dialog says “Something went wrong.”\n\nMost often the token: it lacks Issues: Read and write, it is for a different repository, or it has expired. The error itself is in Apps Script under Executions.\n\nThe dialog says “Commenting is not configured yet.”\n\nGITHUB_TOKEN or GITHUB_REPO is missing from Script Properties.\n\nThere is no Comment button.\n\nCheck that issue-comments is in filters:, that the issue-comments: block has an endpoint, and that the _extensions/ folder is committed if your site is rendered on GitHub. Quarto prints a warning when it renders a page whose issue-comments: block has no endpoint.\n\nPosting shows an error such as “Failed to fetch”.\n\nThe page couldn’t reach the relay. Check that endpoint is the /exec URL and that the deployment’s access is Anyone.",
+    "crumbs": [
+      "Using it",
+      "Installation"
+    ]
+  },
+  {
+    "objectID": "quarto/installation.html#adding-another-site",
+    "href": "quarto/installation.html#adding-another-site",
+    "title": "Installation",
+    "section": "Adding another site",
+    "text": "Adding another site\nEach relay sends to one repository and accepts comments from one site, because GITHUB_REPO and SITE_PREFIX each take one value. So a second site needs its own relay:\n\nToken. Add the second repository to the token you already have: open it under Developer settings → Fine-grained tokens, choose Edit, add the repository, and save. A separate token also works, at the cost of a second expiry date to look after.\nRelay. On the first relay’s Project details page, use the copy icon and rename the copy. In its Script Properties, set GITHUB_REPO and SITE_PREFIX for the second site, and check that GITHUB_TOKEN is there. Then deploy it as in step 3 and copy its own /exec URL.\nSite. Install the extension in the second site and give it the new endpoint.\n\nIf both sites should send comments to the same repository, you can skip step 1.",
+    "crumbs": [
+      "Using it",
+      "Installation"
+    ]
+  },
+  {
     "objectID": "quarto/manifest.html",
     "href": "quarto/manifest.html",
     "title": "1. Manifest",
@@ -300,7 +399,7 @@
     "href": "index.html#using-it",
     "title": "issue-comments",
     "section": "Using it",
-    "text": "Using it\nInstallation and the ten-minute setup are in the README. In short:\nquarto add VagishHemmige/quarto-commenting-extension\nthen deploy apps-script/Code.gs as a web app and add its URL to _quarto.yml.",
+    "text": "Using it\nInstallation walks through the ten-minute setup, with screenshots. In short:\nquarto add VagishHemmige/quarto-commenting-extension\nthen deploy apps-script/Code.gs as a web app and add its URL to _quarto.yml. Every setting is on the Options page.",
     "crumbs": [
       "Home"
     ]
@@ -491,7 +590,7 @@
     "href": "quarto/about.html#pages",
     "title": "About",
     "section": "Pages",
-    "text": "Pages\n\nHome: what the extension does and where to start.\nHow it works: one comment’s path from a highlighted passage to a GitHub issue.\nSecurity and privacy: what each guard protects against, and what it does not.\n1. Manifest: _extension.yml, and what quarto add installs.\n2. Lua filter: issue-comments.lua, which adds commenting to a page at render time.\n3. Browser script: issue-comments.js, the button, dialog and posting.\n4. Styles: issue-comments.css.\n5. Apps Script relay: Code.gs, which checks each comment and creates the issue.\nAbout: this page.",
+    "text": "Pages\n\nHome: what the extension does and where to start.\nInstallation: setting it up, step by step.\nOptions: every setting, and maintenance.\nHow it works: one comment’s path from a highlighted passage to a GitHub issue.\nSecurity and privacy: what each guard protects against, and what it does not.\n1. Manifest: _extension.yml, and what quarto add installs.\n2. Lua filter: issue-comments.lua, which adds commenting to a page at render time.\n3. Browser script: issue-comments.js, the button, dialog and posting.\n4. Styles: issue-comments.css.\n5. Apps Script relay: Code.gs, which checks each comment and creates the issue.\nAbout: this page.",
     "crumbs": [
       "About"
     ]
@@ -582,6 +681,50 @@
     "crumbs": [
       "Source code",
       "3. Browser script"
+    ]
+  },
+  {
+    "objectID": "quarto/options.html",
+    "href": "quarto/options.html",
+    "title": "Options",
+    "section": "",
+    "text": "There are two sets of settings: the page’s, in Quarto, and the relay’s, in Apps Script.",
+    "crumbs": [
+      "Using it",
+      "Options"
+    ]
+  },
+  {
+    "objectID": "quarto/options.html#page-settings",
+    "href": "quarto/options.html#page-settings",
+    "title": "Options",
+    "section": "Page settings",
+    "text": "Page settings\nThese go in the issue-comments: block in _quarto.yml or a page’s front matter. Only endpoint is required.\n\n\n\n\n\n\n\n\nOption\nDefault\nWhat it does\n\n\n\n\nendpoint\n(required)\nThe Apps Script web app URL, ending in /exec.\n\n\nowner\nthe document’s first author, else “the site owner”\nThe name readers are told will post the issue.\n\n\ncontact\nnone (Quarto warns)\nWhere readers go to change or remove a comment: a contact page, your GitHub profile, or mailto:you@example.com. Only http, https, mailto and relative links are used.\n\n\npreview\ntrue\nShow readers the exact issue before it posts.\n\n\npasscode\nfalse\nAsk readers for a shared passcode. Also set the PASSCODE relay setting. Use it only if spam appears.\n\n\npage-button\nfalse\nAlso show a fixed “Comment on this page” button, for comments not tied to a passage.\n\n\n\nWith the block in _quarto.yml, a single page can opt out with issue-comments: false in its front matter.",
+    "crumbs": [
+      "Using it",
+      "Options"
+    ]
+  },
+  {
+    "objectID": "quarto/options.html#relay-settings",
+    "href": "quarto/options.html#relay-settings",
+    "title": "Options",
+    "section": "Relay settings",
+    "text": "Relay settings\nThese are Script Properties in the Apps Script project (Project Settings → Script Properties). A change takes effect on the next comment, with no redeployment.\n\n\n\n\n\n\n\n\nProperty\nDefault\nWhat it does\n\n\n\n\nGITHUB_TOKEN\n(required)\nThe fine-grained token: one repository, Issues: Read and write.\n\n\nGITHUB_REPO\n(required)\nThe repository that receives comments, as owner/repo.\n\n\nSITE_PREFIX\nnone\nOnly pages whose address starts with this can post. Recommended.\n\n\nLABEL\nreader-comment\nThe label put on every comment’s issue, so you can filter them.\n\n\nMAX_PER_HOUR\n20\nThe most comments accepted in one clock hour, from all readers combined.\n\n\nPASSCODE\nnone\nThe shared passcode, when the page setting passcode is true.",
+    "crumbs": [
+      "Using it",
+      "Options"
+    ]
+  },
+  {
+    "objectID": "quarto/options.html#maintenance",
+    "href": "quarto/options.html#maintenance",
+    "title": "Options",
+    "section": "Maintenance",
+    "text": "Maintenance\nToken expiry. When the token expires, commenting stops and readers see “Something went wrong.” Make a new token as in Installation and replace GITHUB_TOKEN in Script Properties. No redeployment is needed.\nUpdating the script. After changing Code.gs, use Deploy → Manage deployments → Edit → Version: New version. That keeps the same /exec URL. New deployment gives a new URL, which every page using the relay would then need.\nChanging the issue format. The page previews the issue itself, so the format is written twice: buildIssue_ in Code.gs, and issueTitle and fillPreview in issue-comments.js. Change both together. See How it works.",
+    "crumbs": [
+      "Using it",
+      "Options"
     ]
   }
 ]
