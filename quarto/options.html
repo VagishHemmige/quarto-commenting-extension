@@ -21,6 +21,41 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
 </style>
 
 
@@ -222,7 +257,12 @@ ul.task-list li input[type="checkbox"] {
    
   <ul>
   <li><a href="#page-settings" id="toc-page-settings" class="nav-link active" data-scroll-target="#page-settings">Page settings</a></li>
-  <li><a href="#relay-settings" id="toc-relay-settings" class="nav-link" data-scroll-target="#relay-settings">Relay settings</a></li>
+  <li><a href="#wording" id="toc-wording" class="nav-link" data-scroll-target="#wording">Wording</a></li>
+  <li><a href="#passcode" id="toc-passcode" class="nav-link" data-scroll-target="#passcode">Passcode</a></li>
+  <li><a href="#relay-settings" id="toc-relay-settings" class="nav-link" data-scroll-target="#relay-settings">Relay settings</a>
+  <ul class="collapse">
+  <li><a href="#repo_map" id="toc-repo_map" class="nav-link" data-scroll-target="#repo_map"><code>REPO_MAP</code></a></li>
+  </ul></li>
   <li><a href="#maintenance" id="toc-maintenance" class="nav-link" data-scroll-target="#maintenance">Maintenance</a></li>
   </ul>
 <div class="toc-actions"><ul><li><a href="https://github.com/VagishHemmige/quarto-commenting-extension/edit/main/quarto/options.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/VagishHemmige/quarto-commenting-extension/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
@@ -276,12 +316,12 @@ ul.task-list li input[type="checkbox"] {
 <tr class="odd">
 <td><code>endpoint</code></td>
 <td><em>(required)</em></td>
-<td>The Apps Script web app URL, ending in <code>/exec</code>.</td>
+<td>The Apps Script web app URL, ending in <code>/exec</code>. Every site can use the same one.</td>
 </tr>
 <tr class="even">
 <td><code>owner</code></td>
 <td>the document’s first <code>author</code>, else “the site owner”</td>
-<td>The name readers are told will post the issue.</td>
+<td>The name readers are told the issue is posted on behalf of.</td>
 </tr>
 <tr class="odd">
 <td><code>contact</code></td>
@@ -296,26 +336,129 @@ ul.task-list li input[type="checkbox"] {
 <tr class="odd">
 <td><code>passcode</code></td>
 <td><code>false</code></td>
-<td>Ask readers for a shared passcode. Also set the <code>PASSCODE</code> relay setting. Use it only if spam appears.</td>
+<td>Show a passcode box. Set it when the relay has <code>PASSCODE</code>.</td>
 </tr>
 <tr class="even">
 <td><code>page-button</code></td>
 <td><code>false</code></td>
 <td>Also show a fixed “Comment on this page” button, for comments not tied to a passage.</td>
 </tr>
+<tr class="odd">
+<td><code>text</code></td>
+<td>the wording below</td>
+<td>Replace any of the wording readers see.</td>
+</tr>
 </tbody>
 </table>
 <p>With the block in <code>_quarto.yml</code>, a single page can opt out with <code>issue-comments: false</code> in its front matter.</p>
+</section>
+<section id="wording" class="level2">
+<h2 class="anchored" data-anchor-id="wording">Wording</h2>
+<p>Everything readers see can be reworded with <code>text:</code>. Give only the keys you want to change; the rest keep their defaults. Quarto warns about a key it doesn’t recognise.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode yaml code-with-copy"><code class="sourceCode yaml"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">issue-comments</span><span class="kw">:</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">endpoint</span><span class="kw">:</span><span class="at"> https://script.google.com/macros/s/XXXXXXXX/exec</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">contact</span><span class="kw">:</span><span class="at"> mailto:jane@example.com</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">text</span><span class="kw">:</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">heading</span><span class="kw">:</span><span class="at"> Comment on the draft plan</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="fu">    notice</span><span class="kw">: </span><span class="ch">&gt;-</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>      This draft is shared with the study team only. Comments are filed as</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>      GitHub issues for {owner}; to change or remove one, {contact}.</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">post</span><span class="kw">:</span><span class="at"> Send to the team</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>A word in braces is filled in where it appears. <code>{owner}</code> works in every key.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Key</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>button</code></td>
+<td>💬 Comment</td>
+</tr>
+<tr class="even">
+<td><code>page-button</code></td>
+<td>💬 Comment on this page</td>
+</tr>
+<tr class="odd">
+<td><code>heading</code></td>
+<td>Leave a comment</td>
+</tr>
+<tr class="even">
+<td><code>preview-heading</code></td>
+<td>Check before posting</td>
+</tr>
+<tr class="odd">
+<td><code>section</code></td>
+<td>Section: {section}</td>
+</tr>
+<tr class="even">
+<td><code>name-label</code></td>
+<td>Your name</td>
+</tr>
+<tr class="odd">
+<td><code>comment-label</code></td>
+<td>Comment</td>
+</tr>
+<tr class="even">
+<td><code>passcode-label</code></td>
+<td>Passcode</td>
+</tr>
+<tr class="odd">
+<td><code>notice</code></td>
+<td>Comments are posted publicly as GitHub issues on behalf of {owner}, together with your name, the highlighted text and a link to this section. You can’t edit or delete a comment after posting; to change or remove one, {contact}. Your name is saved in this browser so you don’t have to retype it.</td>
+</tr>
+<tr class="even">
+<td><code>contact-link</code></td>
+<td>contact {owner} <em>(the text of the <code>{contact}</code> link)</em></td>
+</tr>
+<tr class="odd">
+<td><code>preview-intro</code></td>
+<td>This is exactly what will be posted publicly on GitHub on behalf of {owner}:</td>
+</tr>
+<tr class="even">
+<td><code>cancel</code>, <code>edit</code>, <code>close</code></td>
+<td>Cancel, Edit, Close</td>
+</tr>
+<tr class="odd">
+<td><code>preview</code>, <code>post</code></td>
+<td>Preview, Post publicly</td>
+</tr>
+<tr class="even">
+<td><code>posting</code></td>
+<td>Posting…</td>
+</tr>
+<tr class="odd">
+<td><code>thanks</code></td>
+<td>Thanks! Posted as {issue}.</td>
+</tr>
+<tr class="even">
+<td><code>issue-link</code></td>
+<td>issue #{number} <em>(the text of the <code>{issue}</code> link)</em></td>
+</tr>
+</tbody>
+</table>
+<p>Wording is always shown as plain text, so nothing in it can add HTML to the page. Three things are not set here:</p>
+<ul>
+<li><strong>The issue itself</strong> (title, “Submitted by”, the section link) is written by the relay, so a reader can’t change it, and the preview shows it as it will be.</li>
+<li><strong>Error messages</strong>, such as “That passcode is not correct”, come from the relay.</li>
+<li><strong>The notice should stay true.</strong> If you reword it, keep telling readers that comments are public, who receives them, and how to have one removed.</li>
+</ul>
+</section>
+<section id="passcode" class="level2">
+<h2 class="anchored" data-anchor-id="passcode">Passcode</h2>
+<p>A passcode keeps commenting to the people you give it to. Set <code>PASSCODE</code> in the relay’s Script Properties, and <code>passcode: true</code> on every site that uses the relay, so readers see the box. One passcode covers all your sites.</p>
+<p>Use a long phrase, such as four unrelated words, rather than something memorable. Wrong guesses count against <code>MAX_PER_HOUR</code>, so they can’t be tried quickly, but that also means a run of guesses can use up a site’s allowance for an hour. To change the passcode, change the property; readers aren’t asked to remember it between visits.</p>
 </section>
 <section id="relay-settings" class="level2">
 <h2 class="anchored" data-anchor-id="relay-settings">Relay settings</h2>
 <p>These are Script Properties in the Apps Script project (<strong>Project Settings → Script Properties</strong>). A change takes effect on the next comment, with no redeployment.</p>
 <table class="caption-top table">
-<colgroup>
-<col style="width: 33%">
-<col style="width: 33%">
-<col style="width: 33%">
-</colgroup>
 <thead>
 <tr class="header">
 <th>Property</th>
@@ -325,19 +468,29 @@ ul.task-list li input[type="checkbox"] {
 </thead>
 <tbody>
 <tr class="odd">
-<td><code>GITHUB_TOKEN</code></td>
+<td><code>GITHUB_APP_ID</code></td>
 <td><em>(required)</em></td>
-<td>The fine-grained token: one repository, <strong>Issues: Read and write</strong>.</td>
+<td>The App ID from your GitHub App’s settings page.</td>
 </tr>
 <tr class="even">
-<td><code>GITHUB_REPO</code></td>
+<td><code>GITHUB_APP_KEY</code></td>
 <td><em>(required)</em></td>
-<td>The repository that receives comments, as <code>owner/repo</code>.</td>
+<td>The app’s private key: the whole <code>.pem</code> file. Either format GitHub uses is accepted, with or without line breaks.</td>
 </tr>
 <tr class="odd">
-<td><code>SITE_PREFIX</code></td>
+<td><code>GITHUB_OWNER</code></td>
 <td>none</td>
-<td>Only pages whose address starts with this can post. Recommended.</td>
+<td>Your GitHub user name. A page at <code>https://&lt;owner&gt;.github.io/&lt;repo&gt;/…</code> sends its comments to <code>&lt;owner&gt;/&lt;repo&gt;</code>.</td>
+</tr>
+<tr class="even">
+<td><code>REPO_MAP</code></td>
+<td>none</td>
+<td>Sites at any other address, as JSON from address to repository. See below.</td>
+</tr>
+<tr class="odd">
+<td><code>PASSCODE</code></td>
+<td>none</td>
+<td>The passcode readers must enter. See <a href="#passcode">Passcode</a>.</td>
 </tr>
 <tr class="even">
 <td><code>LABEL</code></td>
@@ -347,19 +500,26 @@ ul.task-list li input[type="checkbox"] {
 <tr class="odd">
 <td><code>MAX_PER_HOUR</code></td>
 <td><code>20</code></td>
-<td>The most comments accepted in one clock hour, from all readers combined.</td>
-</tr>
-<tr class="even">
-<td><code>PASSCODE</code></td>
-<td>none</td>
-<td>The shared passcode, when the page setting <code>passcode</code> is <code>true</code>.</td>
+<td>The most comments accepted for one repository in any 60 minutes. Each repository has its own count.</td>
 </tr>
 </tbody>
 </table>
+<p>Whichever way a page is matched, a repository only receives comments if the app is installed on it.</p>
+<section id="repo_map" class="level3">
+<h3 class="anchored" data-anchor-id="repo_map"><code>REPO_MAP</code></h3>
+<p><code>REPO_MAP</code> covers a site on its own domain, a user site (<code>https://&lt;owner&gt;.github.io/</code> itself), a site whose comments should go to a different repository, and <code>quarto preview</code>:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode json code-with-copy"><code class="sourceCode json"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"https://plan.example.org/"</span><span class="fu">:</span> <span class="st">"VagishHemmige/USRDS"</span><span class="fu">,</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"https://vagishhemmige.github.io/HIV-SLK/"</span><span class="fu">:</span> <span class="st">"VagishHemmige/HIV-SLK-comments"</span><span class="fu">,</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"http://localhost:4200/"</span><span class="fu">:</span> <span class="st">"VagishHemmige/test-comments"</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Each address is the start of the page addresses it covers. When several match, the longest wins, and a match here takes priority over the <code>GITHUB_OWNER</code> rule. Plain <code>http</code> is accepted only for <code>localhost</code>, for previews. <code>quarto preview</code> can pick a different port each time, so give it one with <code>--port 4200</code>.</p>
+</section>
 </section>
 <section id="maintenance" class="level2">
 <h2 class="anchored" data-anchor-id="maintenance">Maintenance</h2>
-<p><strong>Token expiry.</strong> When the token expires, commenting stops and readers see “Something went wrong.” Make a new token as in <a href="../quarto/installation.html#make-a-github-token">Installation</a> and replace <code>GITHUB_TOKEN</code> in Script Properties. No redeployment is needed.</p>
+<p><strong>The private key.</strong> It doesn’t expire. To replace it, generate a new one on the app’s page, paste it into <code>GITHUB_APP_KEY</code>, and delete the old key on the app’s page. No redeployment is needed.</p>
+<p><strong>Adding a site.</strong> Install the app on its repository, and give the site the same <code>endpoint</code>. See <a href="../quarto/installation.html#adding-another-site">Adding another site</a>.</p>
 <p><strong>Updating the script.</strong> After changing <code>Code.gs</code>, use <strong>Deploy → Manage deployments → Edit → Version: New version</strong>. That keeps the same <code>/exec</code> URL. <strong>New deployment</strong> gives a new URL, which every page using the relay would then need.</p>
 <p><strong>Changing the issue format.</strong> The page previews the issue itself, so the format is written twice: <code>buildIssue_</code> in <code>Code.gs</code>, and <code>issueTitle</code> and <code>fillPreview</code> in <code>issue-comments.js</code>. Change both together. See <a href="../quarto/how-it-works.html#two-copies-of-the-issue-format">How it works</a>.</p>
 

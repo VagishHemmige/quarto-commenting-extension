@@ -287,7 +287,7 @@ ul.task-list li input[type="checkbox"] {
 <tr class="even">
 <td><a href="../quarto/relay.html"><code>Code.gs</code></a></td>
 <td>every time a reader posts</td>
-<td>Google’s servers, as you</td>
+<td>Google’s servers, as you, posting as your GitHub App</td>
 </tr>
 </tbody>
 </table>
@@ -296,7 +296,7 @@ ul.task-list li input[type="checkbox"] {
 <p>You turn the extension on by listing <code>issue-comments</code> under <code>filters:</code> and giving it an <code>issue-comments:</code> block in <code>_quarto.yml</code> or a page’s front matter. For each page, the Lua filter:</p>
 <ol type="1">
 <li>stops unless the output is HTML and the block has an <code>endpoint</code>;</li>
-<li>works out the remaining settings, falling back to the document’s first <code>author</code> for <code>owner</code>;</li>
+<li>works out the remaining settings, falling back to the document’s first <code>author</code> for <code>owner</code>, and checks any custom wording;</li>
 <li>attaches <code>issue-comments.js</code> and <code>issue-comments.css</code> to the page; and</li>
 <li>writes the settings into the page’s <code>&lt;head&gt;</code> as <code>window.ISSUE_COMMENTS</code>.</li>
 </ol>
@@ -320,8 +320,9 @@ ul.task-list li input[type="checkbox"] {
   P--&gt;&gt;R: shows the exact issue (preview)
   R-&gt;&gt;P: Post publicly
   P-&gt;&gt;S: POST JSON as text/plain
-  S-&gt;&gt;S: honeypot, passcode, site, length and hourly checks
-  S-&gt;&gt;G: POST /repos/owner/repo/issues (your token)
+  S-&gt;&gt;S: honeypot, page to repository, hourly, passcode and length checks
+  S-&gt;&gt;G: app installation on that repository, then a 1-hour token (cached)
+  S-&gt;&gt;G: POST /repos/owner/repo/issues (as the app's bot)
   G--&gt;&gt;S: 201 Created, issue number and URL
   S--&gt;&gt;P: { ok: true, number, url }
   P--&gt;&gt;R: Thanks! Posted as issue 12
@@ -336,7 +337,7 @@ ul.task-list li input[type="checkbox"] {
 </section>
 <section id="on-the-relay" class="level2">
 <h2 class="anchored" data-anchor-id="on-the-relay">On the relay</h2>
-<p><code>doPost</code> reads your Script Properties, runs its checks, builds the issue text, and creates the issue with your token. It always answers with JSON of the form <code>{ ok, error }</code> or <code>{ ok, number, url }</code>, which the page shows to the reader. <code>doGet</code> exists only so that opening the <code>/exec</code> URL in a browser confirms the deployment is live.</p>
+<p><code>doPost</code> reads your Script Properties, works out the repository from the page’s address, runs its checks, builds the issue text, and creates the issue as your GitHub App, using a token limited to that repository. Because the repository comes from the page, one relay serves every site whose repository has the app installed. It always answers with JSON of the form <code>{ ok, error }</code> or <code>{ ok, number, url }</code>, which the page shows to the reader. <code>doGet</code> exists only so that opening the <code>/exec</code> URL in a browser confirms the deployment is live.</p>
 </section>
 <section id="two-copies-of-the-issue-format" class="level2">
 <h2 class="anchored" data-anchor-id="two-copies-of-the-issue-format">Two copies of the issue format</h2>

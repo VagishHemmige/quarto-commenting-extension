@@ -300,24 +300,24 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p></p><figure class="figure"><p></p>
 <div>
 <pre class="mermaid mermaid-js">flowchart LR
-  A["Reader's browser&lt;br/&gt;(issue-comments.js)"] -- "name, comment,&lt;br/&gt;passage, page" --&gt; B["Google Apps Script&lt;br/&gt;relay (Code.gs)&lt;br/&gt;holds your token"]
-  B -- "GitHub REST API" --&gt; C["Issue in&lt;br/&gt;your repository"]
+  A["Reader's browser&lt;br/&gt;(issue-comments.js)"] -- "name, comment,&lt;br/&gt;passage, page" --&gt; B["Google Apps Script&lt;br/&gt;relay (Code.gs)&lt;br/&gt;holds your app's key"]
+  B -- "GitHub REST API" --&gt; C["Issue in the page's&lt;br/&gt;repository, by your bot"]
 </pre>
 </div>
 <p></p></figure><p></p>
 </div>
 </div>
 </div>
-<p>Your GitHub token stays in an Apps Script project that you own and is never sent to the page.</p>
+<p>Issues are posted by your own GitHub App, so they show as from a bot rather than from you. Its key stays in an Apps Script project that you own and is never sent to the page. One relay serves all your sites.</p>
 <section id="using-it" class="level2">
 <h2 class="anchored" data-anchor-id="using-it">Using it</h2>
 <p><a href="./quarto/installation.html">Installation</a> walks through the ten-minute setup, with screenshots. In short:</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">quarto</span> add VagishHemmige/quarto-commenting-extension</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>then deploy <a href="https://github.com/VagishHemmige/quarto-commenting-extension/blob/main/apps-script/Code.gs"><code>apps-script/Code.gs</code></a> as a web app and add its URL to <code>_quarto.yml</code>. Every setting is on the <a href="./quarto/options.html">Options</a> page.</p>
+<p>then create a GitHub App, deploy <a href="https://github.com/VagishHemmige/quarto-commenting-extension/blob/main/apps-script/Code.gs"><code>apps-script/Code.gs</code></a> as a web app, and add its URL to <code>_quarto.yml</code>. Every setting is on the <a href="./quarto/options.html">Options</a> page.</p>
 </section>
 <section id="what-this-site-is-for" class="level2">
 <h2 class="anchored" data-anchor-id="what-this-site-is-for">What this site is for</h2>
-<p>This site explains how the extension works, file by file, for anyone who wants to check it before trusting it with their token, change it, or contribute. The code on every page is read from the repository’s files when the site is built, so what you see is the code that <code>quarto add</code> installs.</p>
+<p>This site explains how the extension works, file by file, for anyone who wants to check it before trusting it with their GitHub account, change it, or contribute. The code on every page is read from the repository’s files when the site is built, so what you see is the code that <code>quarto add</code> installs.</p>
 <ul>
 <li><a href="./quarto/how-it-works.html">How it works</a> follows one comment from a highlighted passage to a GitHub issue.</li>
 <li><a href="./quarto/security.html">Security and privacy</a> sets out what each guard protects against, and what it does not.</li>
@@ -326,7 +326,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="status" class="level2">
 <h2 class="anchored" data-anchor-id="status">Status</h2>
-<p>Version 0.2.0. It has been used end to end on a live GitHub Pages site, with comments arriving as issues. It has no automated tests.</p>
+<p>Version 0.3.0. Version 0.2.0 was used end to end on a live GitHub Pages site, with comments arriving as issues. 0.3.0 posts as a GitHub App, serves several repositories from one relay, and lets sites change the wording. It has been tested against a stand-in for GitHub but not yet on a live site, and the repository has no automated tests.</p>
 
 
 </section>

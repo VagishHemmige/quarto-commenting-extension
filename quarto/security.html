@@ -221,7 +221,8 @@ ul.task-list li input[type="checkbox"] {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#the-token" id="toc-the-token" class="nav-link active" data-scroll-target="#the-token">The token</a></li>
+  <li><a href="#the-apps-key" id="toc-the-apps-key" class="nav-link active" data-scroll-target="#the-apps-key">The app’s key</a></li>
+  <li><a href="#which-repository-a-comment-goes-to" id="toc-which-repository-a-comment-goes-to" class="nav-link" data-scroll-target="#which-repository-a-comment-goes-to">Which repository a comment goes to</a></li>
   <li><a href="#guards-on-the-relay" id="toc-guards-on-the-relay" class="nav-link" data-scroll-target="#guards-on-the-relay">Guards on the relay</a></li>
   <li><a href="#guards-on-the-page" id="toc-guards-on-the-page" class="nav-link" data-scroll-target="#guards-on-the-page">Guards on the page</a></li>
   <li><a href="#what-readers-data-goes-where" id="toc-what-readers-data-goes-where" class="nav-link" data-scroll-target="#what-readers-data-goes-where">What readers’ data goes where</a></li>
@@ -257,11 +258,17 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<p>The extension lets anyone on the internet cause your GitHub account to open an issue. This page sets out what limits that, so you can judge whether the limits are enough for your site.</p>
-<section id="the-token" class="level2">
-<h2 class="anchored" data-anchor-id="the-token">The token</h2>
-<p>The GitHub token is stored only in the Apps Script project’s Script Properties. The page never receives it: the filter writes only <code>endpoint</code>, <code>owner</code>, <code>contact</code> and three on/off settings into the page, and the relay’s replies contain only <code>ok</code>, <code>error</code>, <code>number</code> and <code>url</code>.</p>
-<p>The relay is deployed to <strong>Execute as: Me</strong>, so it acts as you, and <strong>Who has access: Anyone</strong>, so readers can reach it without signing in. Anyone who finds the <code>/exec</code> URL in your page source can therefore send it requests. What protects you is the token’s scope. A fine-grained token limited to one repository with <strong>Issues: Read and write</strong> and nothing else means that, even if the relay had a bug or the token leaked, the damage is limited to issues in that one repository.</p>
+<p>The extension lets anyone who can reach your relay cause your GitHub App to open an issue. This page sets out what limits that, so you can judge whether the limits are enough for your site.</p>
+<section id="the-apps-key" class="level2">
+<h2 class="anchored" data-anchor-id="the-apps-key">The app’s key</h2>
+<p>The relay posts as a GitHub App, not as you. Its private key is stored only in the Apps Script project’s Script Properties. The page never receives it: the filter writes only <code>endpoint</code>, <code>owner</code>, <code>contact</code>, three on/off settings and any custom wording into the page, and the relay’s replies contain only <code>ok</code>, <code>error</code>, <code>number</code> and <code>url</code>.</p>
+<p>For each comment, the relay uses the key to sign a request that lasts ten minutes, and exchanges it for a GitHub token that lasts an hour and is limited to one repository and to issues. The relay keeps that token in its cache for 50 minutes, so most comments make no extra request.</p>
+<p>The relay is deployed to <strong>Execute as: Me</strong> and <strong>Who has access: Anyone</strong>, so readers can reach it without signing in. Anyone who finds the <code>/exec</code> URL in your page source can therefore send it requests. What protects you is the app’s scope: <strong>Issues: Read and write</strong>, and only on the repositories you installed it on. Even if the relay had a bug or the key leaked, the damage is limited to issues in those repositories, posted under the bot’s name. It cannot push code, and it cannot act as you. If the key does leak, delete it on the app’s page. No new tokens can then be made with it, and any already made expire within the hour.</p>
+</section>
+<section id="which-repository-a-comment-goes-to" class="level2">
+<h2 class="anchored" data-anchor-id="which-repository-a-comment-goes-to">Which repository a comment goes to</h2>
+<p>The page reports its own address, and the relay rebuilds it from its parts: <code>https</code>, a host name, and a path in which anything unusual is percent-encoded. A forged address therefore cannot add text or links to the issue. The relay then picks the repository from that address, using <code>REPO_MAP</code> or the <code>&lt;owner&gt;.github.io/&lt;repo&gt;/</code> rule, and refuses it unless the app is installed there.</p>
+<p>The address is still supplied by the sender, so it is not proof of where a request came from. Someone could send a comment that claims to come from one of your sites without visiting it. They could only reach repositories where you installed the app, and only within that repository’s hourly allowance.</p>
 </section>
 <section id="guards-on-the-relay" class="level2">
 <h2 class="anchored" data-anchor-id="guards-on-the-relay">Guards on the relay</h2>
@@ -285,19 +292,19 @@ ul.task-list li input[type="checkbox"] {
 <td>anyone who reads the page’s code</td>
 </tr>
 <tr class="even">
-<td><code>SITE_PREFIX</code></td>
-<td>other sites embedding your relay; casual reuse of the URL</td>
-<td>a request crafted by hand, since the page address is supplied by the sender</td>
+<td>Repository matching, and the app’s installations</td>
+<td>comments going to any repository you didn’t install the app on</td>
+<td>a hand-made request naming one of your sites</td>
 </tr>
 <tr class="odd">
-<td><code>PASSCODE</code> (optional)</td>
-<td>strangers, if you share the passcode only with intended readers</td>
-<td>anyone you’ve told it to</td>
+<td><code>MAX_PER_HOUR</code> (default 20 per repository, over any 60 minutes)</td>
+<td>a flood of issues; rapid passcode guessing, since wrong guesses count</td>
+<td>a slow trickle; one person using up a repository’s allowance for an hour</td>
 </tr>
 <tr class="even">
-<td><code>MAX_PER_HOUR</code> (default 20)</td>
-<td>a flood of issues</td>
-<td>a slow trickle; one person using up the allowance for everyone</td>
+<td><code>PASSCODE</code> (optional)</td>
+<td>strangers, if you share it only with intended readers</td>
+<td>anyone you’ve told it to; one passcode covers all your sites</td>
 </tr>
 <tr class="odd">
 <td>Length limits (name 80, comment 5,000, passage about 1,600, page 500 characters)</td>
@@ -305,31 +312,31 @@ ul.task-list li input[type="checkbox"] {
 <td>—</td>
 </tr>
 <tr class="even">
-<td><code>@</code> mentions neutralised</td>
-<td>comments pinging GitHub users from your account</td>
+<td><code>@</code> mentions, <code>owner/repo#12</code> references and links to other repositories’ issues defused</td>
+<td>comments pinging GitHub users, or adding “mentioned this” to other people’s issues</td>
 <td>—</td>
 </tr>
 </tbody>
 </table>
-<p>The hourly limit counts all readers together, in clock hours, and the count lives in Apps Script’s cache, which Google may clear early. Treat it as a brake, not a guarantee. If spam does arrive, turn on the passcode, lower <code>MAX_PER_HOUR</code>, or close the deployment.</p>
+<p>The count lives in Apps Script’s cache, which Google may clear early, so treat the limit as a brake, not a guarantee. If spam does arrive, turn on the passcode, lower <code>MAX_PER_HOUR</code>, uninstall the app from a repository, or close the deployment.</p>
 </section>
 <section id="guards-on-the-page" class="level2">
 <h2 class="anchored" data-anchor-id="guards-on-the-page">Guards on the page</h2>
 <ul>
-<li>Everything a reader types, and every setting, is put on the page as text (<code>textContent</code>), never as HTML, so a comment or a setting cannot inject markup.</li>
+<li>Everything a reader types, and every setting, including custom wording, is put on the page as text (<code>textContent</code>), never as HTML, so a comment or a setting cannot inject markup.</li>
 <li>The <code>contact</code> link is used only if it is an <code>http</code>, <code>https</code>, <code>mailto</code> or relative address, so a <code>javascript:</code> URL in the settings cannot run.</li>
 <li>The filter escapes <code>&lt;/</code> in the settings it writes into the page, so a value cannot close the <code>&lt;script&gt;</code> tag early.</li>
 </ul>
 </section>
 <section id="what-readers-data-goes-where" class="level2">
 <h2 class="anchored" data-anchor-id="what-readers-data-goes-where">What readers’ data goes where</h2>
-<p>A reader’s name, comment, the highlighted passage, the section heading and anchor, and the page address go to the relay, and from there into a public issue (all except the anchor and page, which form the section link). Their name is also kept in their own browser’s <code>localStorage</code> to save retyping. Nothing else is collected: no email, no GitHub identity, no cookies. Apps Script does not give the script the reader’s IP address, though Google keeps its own request logs.</p>
-<p>Readers are told before posting that the comment is public, that you post it, and that they cannot edit or delete it themselves; they are shown the exact issue first unless you set <code>preview: false</code>.</p>
+<p>A reader’s name, comment, the highlighted passage, the section heading and anchor, and the page address go to the relay, and from there into a public issue (all except the anchor and page, which form the section link). Their name is also kept in their own browser’s <code>localStorage</code> to save retyping, and the default notice says so. A passcode is sent with each comment and checked, but never stored or posted. Nothing else is collected: no email, no GitHub identity, no cookies. Apps Script does not give the script the reader’s IP address, though Google keeps its own request logs.</p>
+<p>Readers are told before posting that the comment is public, who it goes to, and that they cannot edit or delete it themselves; they are shown the exact issue first unless you set <code>preview: false</code>. If you reword the notice with <code>text:</code>, keep those points in it.</p>
 </section>
 <section id="limits-that-follow-from-the-design" class="level2">
 <h2 class="anchored" data-anchor-id="limits-that-follow-from-the-design">Limits that follow from the design</h2>
 <ul>
-<li><strong>Names are not verified.</strong> Anyone can type any name.</li>
+<li><strong>Names are not verified.</strong> Anyone with the passcode, or anyone at all if there is none, can type any name.</li>
 <li><strong>Comments are posted as typed.</strong> GitHub renders Markdown in the comment and passage, so a reader can add links or formatting. The name and section heading are escaped.</li>
 <li><strong>Readers are not notified of replies</strong>, because they have no GitHub identity in the issue.</li>
 </ul>
