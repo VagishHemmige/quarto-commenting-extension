@@ -2,7 +2,7 @@
 title: "5. Apps Script relay"
 ---
 
-The relay is a Google Apps Script web app that you deploy from your own Google account. It receives each comment, checks it, and creates the GitHub issue with your token. It is the only part that holds a secret, so it is the part to read most carefully.
+The relay is a Google Apps Script web app that you deploy from your own Google account. It receives each comment, checks it, works out which repository it belongs to, and creates the GitHub issue as your GitHub App. One relay serves all your sites. It is the only part that holds a secret, so it is the part to read most carefully.
 
 ::: {.callout-note .source-callout title="Source code" icon=false}
 [`apps-script/Code.gs`](https://github.com/VagishHemmige/quarto-commenting-extension/blob/main/apps-script/Code.gs)
@@ -19,7 +19,7 @@ All configuration lives in Script Properties, which only you can see. Changing a
 
 ## Receiving a comment
 
-Apps Script calls `doPost` for every POST to the `/exec` URL. Without a token and repository it refuses at once.
+Apps Script calls `doPost` for every POST to the `/exec` URL. Without the app's ID and key it refuses at once.
 
 ```{.js file="apps-script/Code.gs" from="function doPost(e)" }
 ```
@@ -34,12 +34,17 @@ The checks then run cheapest first. A filled-in honeypot gets a fake success, so
 ```{.js file="apps-script/Code.gs" from="// Honeypot filled in" }
 ```
 
-```{.js file="apps-script/Code.gs" from="const passcode = props" }
+Next the relay rebuilds the page address and works out the repository from it ([below](#which-repository)). Both steps are plain text work, with no request to GitHub, so a page that matches nothing costs almost nothing to turn away.
+
+```{.js file="apps-script/Code.gs" from="const page = cleanPage_(d.page);" }
 ```
 
-`SITE_PREFIX` compares the page address the browser reported. It turns away other sites and casual reuse of the URL, but the address is supplied by the sender, so it is not proof of where a request came from (see [Security and privacy](security.qmd)).
+The hourly limit comes before the passcode, so that every wrong guess uses up part of that repository's allowance. Guessing a long passcode is then impractically slow. The cost is that a run of wrong guesses can block a site's real readers for up to an hour.
 
-```{.js file="apps-script/Code.gs" from="const prefix = props" }
+```{.js file="apps-script/Code.gs" from="// Counted before the passcode" }
+```
+
+```{.js file="apps-script/Code.gs" from="const passcode = props" }
 ```
 
 The name and comment are trimmed and cut to the same limits the form uses, since a request need not come from the form.
@@ -47,9 +52,9 @@ The name and comment are trimmed and cut to the same limits the form uses, since
 ```{.js file="apps-script/Code.gs" from="const name = clean_(d.name" }
 ```
 
-The rate limit is checked last, so that rejected requests don't use it up.
+Only now does the relay contact GitHub, for a token for this repository. If the app isn't installed there, the comment is refused with the same message as an unknown page.
 
-```{.js file="apps-script/Code.gs" from="if (!allow_(" }
+```{.js file="apps-script/Code.gs" from="const token = repoToken_(" }
 ```
 
 Then the issue is created, and the reader is sent its number and address.
@@ -67,9 +72,23 @@ Any error, including one from GitHub, is written to the Apps Script execution lo
 ```{.js file="apps-script/Code.gs" from="/** Lets you open" to="}"}
 ```
 
+## Which repository {#which-repository}
+
+The page reports its own address. `cleanPage_` keeps only the scheme, host and path, lower-cases the host, and percent-encodes any character in the path that isn't plainly safe. Brackets, parentheses and spaces therefore can't reach the issue's Markdown link. Plain `http` is accepted only for `localhost`, so that `quarto preview` can be tested through `REPO_MAP`.
+
+```{.js file="apps-script/Code.gs" from="/** Rebuilds the page address" to="}"}
+```
+
+`repoFor_` checks `REPO_MAP` first, longest address first, so a more specific entry wins. Each map address is cleaned the same way before comparing, so capital letters in it don't matter, and a repository name in the map that isn't `owner/name` is refused rather than used. Otherwise, a page at `https://<owner>.github.io/<repo>/` belongs to `<owner>/<repo>`, provided `<owner>` is `GITHUB_OWNER`. The trailing `/` after the repository name is required, so a user site's page such as `https://<owner>.github.io/about.html` is not mistaken for a repository called `about.html`.
+
+```{.js file="apps-script/Code.gs" from="/** Works out which repository" to="}"}
+```
+
+The address is supplied by the sender, so this decides where a comment may go, not where it came from. The last word belongs to GitHub: a repository without the app installed is refused in `repoToken_`.
+
 ## Building the issue
 
-`buildIssue_` writes the title and body. The anchor is reduced to characters valid in an `id`, so it cannot break out of the link. The name and section are escaped so they display literally; the passage and comment are left as typed, so GitHub renders any Markdown in them. Finally `noMentions_` runs over both title and body.
+`buildIssue_` writes the title and body. The anchor is reduced to characters valid in an `id`, so it cannot break out of the link, and the page address has already been rebuilt. The name and section are escaped so they display literally; the passage and comment are left as typed, so GitHub renders any Markdown in them. Finally `defuse_` runs over both title and body.
 
 ```{.js file="apps-script/Code.gs" from="/** The page previews this text" to="}"}
 ```
@@ -83,21 +102,43 @@ The preview's title comes from `issueTitle` in the browser script, and there are
 Neither changes what a reader wrote, only how the title is trimmed. They are noted here so that the two copies can be brought back into step.
 :::
 
+## Acting as the app
+
+GitHub Apps authenticate in two steps. `repoToken_` first asks GitHub for the app's installation on the repository; a `404` means the app isn't installed there, and the comment is refused. It then exchanges the installation for a token that lasts an hour. The request narrows that token to this one repository and to issues, even if the app is later given more. The token is cached for 50 minutes, keyed by repository, so most comments skip both requests.
+
+```{.js file="apps-script/Code.gs" from="/** A token for one repository" to="}"}
+```
+
+Both requests are signed with a JSON Web Token (JWT) that `appJwt_` makes from the app's private key. It says which app is asking (`iss`), and is valid for nine minutes, starting a minute in the past in case Google's and GitHub's clocks differ slightly. GitHub accepts at most ten.
+
+```{.js file="apps-script/Code.gs" from="/** The short-lived signed token" to="}"}
+```
+
+Apps Script's `computeRsaSha256Signature` only accepts a key in PKCS#8 form (`BEGIN PRIVATE KEY`), but GitHub's downloads are PKCS#1 (`BEGIN RSA PRIVATE KEY`). The two hold the same key; PKCS#8 just wraps it with a note saying it is an RSA key. `pkcs8_` adds that wrapping, so the `.pem` file can be pasted as it is, without converting it first with `openssl`. It also rebuilds the line breaks, which are often lost when the key is pasted into a Script Property.
+
+```{.js file="apps-script/Code.gs" from="/** Apps Script signs only" to="}"}
+```
+
 ## Creating the issue
 
-`createIssue_` calls the GitHub REST API with the token and the `reader-comment` label (or your `LABEL`). `muteHttpExceptions` lets the code read GitHub's error instead of Apps Script throwing its own, and anything other than `201 Created` is treated as a failure.
+`createIssue_` posts the issue with the repository's token and the `reader-comment` label (or your `LABEL`). Anything other than `201 Created` is treated as a failure.
 
 ```{.js file="apps-script/Code.gs" from="function createIssue_(" to="}"}
 ```
 
-## The hourly limit
+`github_` makes every call to GitHub's REST API. `muteHttpExceptions` lets the code read GitHub's error instead of Apps Script throwing its own.
 
-`allow_` keeps one counter per clock hour in the script cache. The script lock stops two simultaneous requests from both reading the same count and both going through. The cache entry lasts a little over an hour (3,700 seconds), long enough to cover its hour.
-
-```{.js file="apps-script/Code.gs" from="/** Simple shared limit" to="}"}
+```{.js file="apps-script/Code.gs" from="function github_(" to="}"}
 ```
 
-The comment above it says "rolling hour", but the counter resets at the top of each clock hour, so up to twice `MAX_PER_HOUR` can arrive within one 60-minute span that straddles the change. Google may also clear the cache early, which resets the count.
+## The hourly limit
+
+`allow_` keeps, for each repository, the times of the requests in the past hour, in the script cache. A request is allowed if there are fewer than `MAX_PER_HOUR` of them. Because the window rolls with each request, rather than resetting on the hour, no 60-minute span can take more than the limit. The script lock stops two simultaneous requests from both reading the same list and both going through.
+
+```{.js file="apps-script/Code.gs" from="/** At most `max` requests" to="}"}
+```
+
+Google may clear the cache early, which resets the count, so this is a brake rather than a guarantee.
 
 ## Small helpers
 
@@ -106,9 +147,9 @@ The comment above it says "rolling hour", but the counter resets at the top of e
 ```{.js file="apps-script/Code.gs" from="function clean_(v, max)" to="}"}
 ```
 
-`noMentions_` puts an invisible zero-width space after each `@` that is followed by a letter or digit. The text looks the same, but GitHub no longer sees `@username`, so a comment cannot notify anyone from your account.
+`defuse_` puts an invisible zero-width space into three things GitHub would otherwise act on. After `@`, it stops a comment from notifying a user. After the `#` of `owner/repo#12`, and inside `github.com` in a link to another repository's issue, pull request or discussion, it stops GitHub from adding "mentioned this" to someone else's issue. The text looks the same. A plain `#12`, which can only refer to the same repository, is left alone.
 
-```{.js file="apps-script/Code.gs" from="function noMentions_(s)" to="}"}
+```{.js file="apps-script/Code.gs" from="function defuse_(s)" to="}"}
 ```
 
 `escapeInline_` puts a backslash before Markdown's special characters, so a name such as `*Jane*` shows as typed.

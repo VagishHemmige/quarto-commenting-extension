@@ -32,6 +32,14 @@ Quarto hands settings to a filter as Pandoc values, not plain strings: `owner: J
 ```{.lua file="_extensions/issue-comments/issue-comments.lua" from="local function first_author" to="end"}
 ```
 
+`text_settings` reads the `text:` block. It keeps only the keys the browser script uses, turns each value into a plain string, and warns about any other key, so a misspelt `headng:` is reported rather than silently ignored. The list of keys must match `DEFAULT_TEXT` in [the browser script](browser.qmd#wording).
+
+```{.lua file="_extensions/issue-comments/issue-comments.lua" from="-- Keys of `text:` the browser" to="}"}
+```
+
+```{.lua file="_extensions/issue-comments/issue-comments.lua" from="local function text_settings(" to="end"}
+```
+
 ## Deciding whether the page gets commenting
 
 The work happens in `Meta`, which Pandoc calls once with the page's metadata. It returns early, leaving the page unchanged, for any non-HTML output, so PDF and Word renders of the same source are untouched.
@@ -51,7 +59,7 @@ Without an `endpoint` there is nowhere to send comments, so the page is left alo
 
 ## Settling the settings
 
-These are the six values the browser script receives. The keys are camel case (`pageButton`) because they become JavaScript properties. A missing `contact` is allowed, since readers are still told who to contact, but Quarto warns because they would have no link to follow.
+These are the seven values the browser script receives. The keys are camel case (`pageButton`) because they become JavaScript properties; the `text` keys stay as written, since the script looks them up by those names. A missing `contact` is allowed, since readers are still told who to contact, but Quarto warns because they would have no link to follow.
 
 ```{.lua file="_extensions/issue-comments/issue-comments.lua" from="local settings = {" to="end"}
 ```
