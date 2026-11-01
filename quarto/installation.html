@@ -338,14 +338,16 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h2 class="anchored" data-anchor-id="create-a-github-app">2. Create a GitHub App</h2>
 <p>A GitHub App is a GitHub account that belongs to the relay rather than to you. Issues it creates show as posted by a bot, such as <strong>jdoe-comments[bot]</strong>, so reader comments are easy to tell apart from your own, and GitHub notifies you of them as it would of anyone else’s. The app is allowed to do one thing, work with issues, and only in the repositories you install it on.</p>
 <ol type="1">
-<li>Open GitHub’s form for a new app: <a href="https://github.com/settings/apps/new" class="uri">https://github.com/settings/apps/new</a>. To get there by clicking instead, use your <strong>profile picture → Settings</strong> (your account’s settings, not a repository’s), then <strong>Developer settings</strong> at the bottom of the left sidebar, then <strong>GitHub Apps → New GitHub App</strong>.</li>
-<li><strong>GitHub App name:</strong> something like “jdoe-comments”. The name has to be unused across all of GitHub, and it is what readers’ issues will show as posted by.</li>
-<li><strong>Homepage URL:</strong> your site’s address, or your GitHub profile. It is required but not used.</li>
-<li><strong>Webhook:</strong> untick <strong>Active</strong>. The relay only sends to GitHub; it never needs GitHub to call it.</li>
-<li><strong>Permissions → Repository permissions → Issues:</strong> choose <strong>Read and write</strong>. Leave everything else at <strong>No access</strong>. GitHub adds <strong>Metadata: Read-only</strong> itself.</li>
-<li><strong>Where can this GitHub App be installed?</strong> Choose <strong>Only on this account</strong>, then click <strong>Create GitHub App</strong>.</li>
-<li>On the app’s page that opens, note the <strong>App ID</strong> near the top. Scroll to <strong>Private keys</strong> and click <strong>Generate a private key</strong>. A <code>.pem</code> file downloads. You will paste its contents into the relay in step 3, and you can then delete the file.</li>
-<li>Click <strong>Install App</strong> in the left sidebar, then <strong>Install</strong>. Choose <strong>Only select repositories</strong>, pick the repository that will receive comments, and click <strong>Install</strong>.</li>
+<li><p>Open GitHub’s form for a new app: <a href="https://github.com/settings/apps/new" class="uri">https://github.com/settings/apps/new</a>. To get there by clicking instead, use your <strong>profile picture → Settings</strong> (your account’s settings, not a repository’s), then <strong>Developer settings</strong> at the bottom of the left sidebar, then <strong>GitHub Apps → New GitHub App</strong>.</p></li>
+<li><p><strong>GitHub App name:</strong> something like “jdoe-comments”. The name has to be unused across all of GitHub, and it is what readers’ issues will show as posted by.</p></li>
+<li><p><strong>Homepage URL:</strong> your site’s address, or your GitHub profile. It is required but not used.</p></li>
+<li><p><strong>Webhook:</strong> untick <strong>Active</strong>. The relay only sends to GitHub; it never needs GitHub to call it.</p>
+<p><img src="../images/app-webhook.png" class="img-fluid" alt="The Webhook section of GitHub's new app form, with the Active checkbox unticked and outlined, and the Webhook URL and Secret boxes left empty."></p></li>
+<li><p><strong>Permissions → Repository permissions → Issues:</strong> choose <strong>Read and write</strong>. Leave everything else at <strong>No access</strong>. GitHub adds <strong>Metadata: Read-only</strong> itself; if it doesn’t, set Metadata to Read-only.</p>
+<p><img src="../images/app-issues-permission.png" class="img-fluid" alt="The Issues row under Repository permissions, with its Access menu open and Read and write outlined."></p></li>
+<li><p><strong>Where can this GitHub App be installed?</strong> Choose <strong>Only on this account</strong>, then click <strong>Create GitHub App</strong>.</p></li>
+<li><p>On the app’s page that opens, note the <strong>App ID</strong> near the top. Scroll to <strong>Private keys</strong> and click <strong>Generate a private key</strong>. A <code>.pem</code> file downloads. You will paste its contents into the relay in step 3, and you can then delete the file.</p></li>
+<li><p>Click <strong>Install App</strong> in the left sidebar, then <strong>Install</strong>. Choose <strong>Only select repositories</strong>, pick the repository that will receive comments, and click <strong>Install</strong>.</p></li>
 </ol>
 <p>Why so narrow? The relay accepts comments from anyone on the internet, so what the app can do is the limit on any damage. Even if the private key leaked, it could only create and edit issues, as the bot, in the repositories the app is installed on. It could not touch your code or post as you. See <a href="../quarto/security.html">Security and privacy</a>.</p>
 </section>
