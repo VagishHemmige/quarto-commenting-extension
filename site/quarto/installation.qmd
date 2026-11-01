@@ -53,7 +53,13 @@ A GitHub App is a GitHub account that belongs to the relay rather than to you. I
 2. **GitHub App name:** something like "jdoe-comments". The name has to be unused across all of GitHub, and it is what readers' issues will show as posted by.
 3. **Homepage URL:** your site's address, or your GitHub profile. It is required but not used.
 4. **Webhook:** untick **Active**. The relay only sends to GitHub; it never needs GitHub to call it.
-5. **Permissions → Repository permissions → Issues:** choose **Read and write**. Leave everything else at **No access**. GitHub adds **Metadata: Read-only** itself.
+
+   ![](../images/app-webhook.png){fig-alt="The Webhook section of GitHub's new app form, with the Active checkbox unticked and outlined, and the Webhook URL and Secret boxes left empty."}
+
+5. **Permissions → Repository permissions → Issues:** choose **Read and write**. Leave everything else at **No access**. GitHub adds **Metadata: Read-only** itself; if it doesn't, set Metadata to Read-only.
+
+   ![](../images/app-issues-permission.png){fig-alt="The Issues row under Repository permissions, with its Access menu open and Read and write outlined."}
+
 6. **Where can this GitHub App be installed?** Choose **Only on this account**, then click **Create GitHub App**.
 7. On the app's page that opens, note the **App ID** near the top. Scroll to **Private keys** and click **Generate a private key**. A `.pem` file downloads. You will paste its contents into the relay in step 3, and you can then delete the file.
 8. Click **Install App** in the left sidebar, then **Install**. Choose **Only select repositories**, pick the repository that will receive comments, and click **Install**.
