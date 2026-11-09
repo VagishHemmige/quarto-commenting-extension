@@ -1,0 +1,12 @@
+cff-version: 1.2.0
+message: "If you use this extension, please cite it as below."
+title: "Issue Comments: a Quarto extension for reader comments filed as GitHub issues"
+type: software
+authors:
+  - family-names: Hemmige
+    given-names: Vagish
+    orcid: "https://orcid.org/0009-0006-6346-1826"
+version: "0.3.0"
+license: MIT
+abstract: "A Quarto extension that lets readers of a website comment on any passage and have the comment filed as a GitHub issue."
+repository-code: "https://github.com/VagishHemmige/quarto-commenting-extension"
